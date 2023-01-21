@@ -4,7 +4,6 @@ namespace Themosis\Core;
 
 use Closure;
 use Composer\Autoload\ClassLoader;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application as ApplicationContract;
 use Illuminate\Contracts\Foundation\CachesConfiguration;
@@ -150,6 +149,18 @@ class Application extends \Illuminate\Foundation\Application implements
     public function version()
     {
         return static::VERSION;
+    }
+
+    /**
+     * Register all of the base service providers.
+     *
+     * @return void
+     */
+    protected function registerBaseServiceProviders()
+    {
+        $this->register(new EventServiceProvider($this));
+        $this->register(new LogServiceProvider($this));
+        $this->register(new RouteServiceProvider($this));
     }
 
     /**
