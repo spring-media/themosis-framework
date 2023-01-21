@@ -40,6 +40,7 @@
     "filp/whoops": "^2.1",
     "guzzlehttp/guzzle": "^7.2",
     "laravel/framework": "9.x-dev",
+    "laravel/sanctum": "^3.0",
     "laravel/tinker": "^2.7",
     "laravel/ui": "^4.2",
     "league/flysystem": "^3.8.0",
