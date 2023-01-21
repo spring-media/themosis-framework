@@ -153,31 +153,6 @@ class Application extends \Illuminate\Foundation\Application implements
     }
 
     /**
-     * Register basic bindings into the container.
-     */
-    protected function registerBaseBindings()
-    {
-        static::setInstance($this);
-        $this->instance('app', $this);
-        $this->instance(Container::class, $this);
-        $this->instance(PackageManifest::class, new PackageManifest(
-            new Filesystem(),
-            $this->basePath(),
-            $this->getCachedPackagesPath(),
-        ));
-    }
-
-    /**
-     * Register base service providers.
-     */
-    protected function registerBaseServiceProviders()
-    {
-        $this->register(new EventServiceProvider($this));
-        $this->register(new LogServiceProvider($this));
-        $this->register(new RouteServiceProvider($this));
-    }
-
-    /**
      * Register the core class aliases in the container.
      */
     public function registerCoreContainerAliases()
