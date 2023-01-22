@@ -267,6 +267,10 @@ class Application extends \Illuminate\Foundation\Application implements
                 \Illuminate\Log\LogManager::class,
                 \Psr\Log\LoggerInterface::class,
             ],
+            'mail.manager' => [
+                \Illuminate\Mail\MailManager::class,
+                \Illuminate\Contracts\Mail\Factory::class
+            ],
             'mailer' => [
                 \Illuminate\Mail\Mailer::class,
                 \Illuminate\Contracts\Mail\Mailer::class,
