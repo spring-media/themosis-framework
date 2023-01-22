@@ -50,7 +50,7 @@
     "ramsey/uuid": "^4.7",
     "spatie/enum": "^3.13",
     "spatie/laravel-ignition": "^1.0",
-    "symfony/property-access": "^5.4",
+    "symfony/property-access": "^6.2",
     "twig/twig": " ^3.1",
     "vlucas/phpdotenv": "^5.4.1"
   },
