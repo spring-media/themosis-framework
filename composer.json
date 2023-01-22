@@ -63,6 +63,8 @@
     "mockery/mockery": "^1.4.4",
     "nunomaduro/collision": "^6.1",
     "johnpbloch/wordpress-core": "^6.0",
+    "pestphp/pest": "^1.22",
+    "pestphp/pest-plugin-laravel": "^1.4",
     "phpunit/phpunit": "^9.5.10",
     "symfony/var-dumper": "^6.0"
   },
