@@ -217,8 +217,10 @@ class VendorPublishCommand extends Command
     protected function moveManagedFiles($manager)
     {
         foreach ($manager->listContents('from://', true) as $file) {
-            if ($file['type'] === 'file' && (! $manager->fileExists('to://'.$file['path']) || $this->option('force'))) {
-                $manager->write('to://'.$file['path'], $manager->read($file['path']));
+            $destinationPath = str_replace('from://', 'to://', $file->path());
+
+            if ($file['type'] === 'file' && (! $manager->fileExists($destinationPath) || $this->option('force'))) {
+                $manager->copy($file['path'], $destinationPath);
             }
         }
     }
