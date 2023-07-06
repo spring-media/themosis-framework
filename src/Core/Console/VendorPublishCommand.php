@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
-use League\Flysystem\Adapter\Local;
+use League\Flysystem\Local\LocalFilesystemAdapter as Local;
 use League\Flysystem\MountManager;
 
 class VendorPublishCommand extends Command
@@ -217,8 +217,8 @@ class VendorPublishCommand extends Command
     protected function moveManagedFiles($manager)
     {
         foreach ($manager->listContents('from://', true) as $file) {
-            if ($file['type'] === 'file' && (! $manager->has('to://'.$file['path']) || $this->option('force'))) {
-                $manager->put('to://'.$file['path'], $manager->read('from://'.$file['path']));
+            if ($file['type'] === 'file' && (! $manager->fileExists('to://'.$file['path']) || $this->option('force'))) {
+                $manager->write('to://'.$file['path'], $manager->read($file['path']));
             }
         }
     }
