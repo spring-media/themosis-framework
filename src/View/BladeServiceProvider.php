@@ -106,7 +106,7 @@ class BladeServiceProvider extends ServiceProvider
             // Set the view path.
             if (isset($args[1])) {
                 if (is_callable($args[1])) {
-                    $args[1] = call_user_func($args[1]);
+                    $args[1] = "'.{$args[1]}().'";
                 }
 
                 $path = $args[0].'-'.$args[1];
