@@ -161,4 +161,14 @@ class NullMessageBag implements MessageBag
     {
         return $this->count() > 0;
     }
+
+    /**
+      * {@inheritdoc}
+     *
+     * @return $this|MessageBag
+      */
+     public function forget($key)
+     {
+        return $this;
+     }
 }
