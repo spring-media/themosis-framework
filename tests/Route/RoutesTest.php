@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Http\Request;
@@ -11,9 +10,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Themosis\Route\Middleware\WordPressBindings;
 use Themosis\Route\Router;
+use Themosis\Tests\Application;
 
 class RoutesTest extends TestCase
 {
+    use Application;
+
     public function testWordPressHomeRoute()
     {
         $router = $this->getWordPressRouter();
@@ -694,7 +696,7 @@ class RoutesTest extends TestCase
 
     protected function getRouter()
     {
-        $container = new Container();
+        $container = $this->getApplication();
         $router = new Router(new Dispatcher(), $container);
         $container->singleton(Registrar::class, function () use ($router) {
             return $router;
