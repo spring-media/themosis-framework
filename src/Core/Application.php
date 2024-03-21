@@ -42,7 +42,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
      *
      * @var string
      */
-    public const VERSION = '8.1.0';
+    public const VERSION = '10.0';
 
     /**
      * Application textdomain.

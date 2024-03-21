@@ -2,11 +2,9 @@
 
 namespace Themosis\Tests\Metabox;
 
-use Illuminate\Config\Repository;
 use League\Fractal\Manager;
 use League\Fractal\Serializer\ArraySerializer;
 use PHPUnit\Framework\TestCase;
-use Themosis\Core\Application;
 use Themosis\Forms\Fields\FieldsRepository;
 use Themosis\Hook\ActionBuilder;
 use Themosis\Hook\FilterBuilder;
@@ -15,28 +13,11 @@ use Themosis\Metabox\Factory;
 use Themosis\Metabox\Resources\MetaboxResource;
 use Themosis\Metabox\Resources\Transformers\MetaboxTransformer;
 use Themosis\Support\Section;
+use Themosis\Tests\Application;
 
 class MetaboxTest extends TestCase
 {
-    protected $application;
-
-    protected function getApplication()
-    {
-        if (! is_null($this->application)) {
-            return $this->application;
-        }
-
-        $this->application = new Application();
-
-        $this->application->bind('config', function () {
-            $config = new Repository();
-            $config->set('app.locale', 'en_US');
-
-            return $config;
-        });
-
-        return $this->application;
-    }
+    use Application;
 
     protected function getFactory()
     {
