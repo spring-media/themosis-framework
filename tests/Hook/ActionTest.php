@@ -1,8 +1,11 @@
 <?php
 
+namespace Themosis\Tests\Hook;
+
 use PHPUnit\Framework\TestCase;
 use Themosis\Core\Application;
 use Themosis\Hook\ActionBuilder;
+use Themosis\Tests\Mocks\ActionMock;
 
 class ActionTest extends TestCase
 {
@@ -20,7 +23,7 @@ class ActionTest extends TestCase
     {
         $action = $this->getMockBuilder(ActionBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addAction'])
+            ->onlyMethods(['addAction'])
             ->getMock();
 
         $action->expects($this->once())
@@ -46,20 +49,20 @@ class ActionTest extends TestCase
     {
         $action = $this->getMockBuilder(ActionBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addAction'])
+            ->onlyMethods(['addAction'])
             ->getMock();
 
         $action->expects($this->exactly(2))
             ->method('addAction');
 
         // Run the action
-        $action->add('a_custom_action', 'AnActionClassForTest', 5, 4);
+        $action->add('a_custom_action', ActionMock::class, 5, 4);
 
         // Check if this action is registered.
         $this->assertTrue($action->exists('a_custom_action'));
 
         // Check the attached callback is an array with instance of AnActionClassForTest.
-        $class = new AnActionClassForTest();
+        $class = new ActionMock();
         $this->assertEquals([$class, 'a_custom_action'], $action->getCallback('a_custom_action')[0]);
 
         // Check defined priority.
@@ -69,7 +72,7 @@ class ActionTest extends TestCase
         $this->assertEquals(4, $action->getCallback('a_custom_action')[2]);
 
         // Run the action if pre-defined method.
-        $action->add('another_hook', 'AnActionClassForTest@customName');
+        $action->add('another_hook', 'Themosis\Tests\Mocks\ActionMock@customName');
 
         // Check this action is registered.
         $this->assertTrue($action->exists('another_hook'));
@@ -81,7 +84,7 @@ class ActionTest extends TestCase
     {
         $action = $this->getMockBuilder(ActionBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addAction'])
+            ->onlyMethods(['addAction'])
             ->getMock();
 
         $action->expects($this->once())->method('addAction');
@@ -99,7 +102,7 @@ class ActionTest extends TestCase
     {
         $action = $this->getMockBuilder(ActionBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addAction'])
+            ->onlyMethods(['addAction'])
             ->getMock();
 
         $action->expects($this->once())->method('addAction');
@@ -111,14 +114,14 @@ class ActionTest extends TestCase
 
         // Check if callback is this instance.
         $this->assertEquals([$this, 'afterSetup'], $action->getCallback('after-custom-setup')[0]);
-        $this->assertInstanceOf('ActionTest', $action->getCallback('after-custom-setup')[0][0]);
+        $this->assertInstanceOf(ActionTest::class, $action->getCallback('after-custom-setup')[0][0]);
     }
 
     public function testActionIsRanWithoutArguments()
     {
         $action = $this->getMockBuilder(ActionBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['doAction'])
+            ->onlyMethods(['doAction'])
             ->getMock();
 
         $action->expects($this->exactly(2))
@@ -134,7 +137,7 @@ class ActionTest extends TestCase
     {
         $action = $this->getMockBuilder(ActionBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['doActionRefArray'])
+            ->onlyMethods(['doActionRefArray'])
             ->getMock();
 
         $action->expects($this->exactly(2))->method('doActionRefArray');
@@ -149,7 +152,7 @@ class ActionTest extends TestCase
     {
         $action = $this->getMockBuilder(ActionBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addAction'])
+            ->onlyMethods(['addAction'])
             ->getMock();
 
         $action->expects($this->exactly(3))->method('addAction');

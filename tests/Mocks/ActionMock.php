@@ -1,6 +1,8 @@
 <?php
 
-class AnActionClassForTest
+namespace Themosis\Tests\Mocks;
+
+class ActionMock
 {
     public function init()
     {

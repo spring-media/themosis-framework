@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Themosis\Core\Application;
 use Themosis\Core\PackageManifest;
 use Themosis\Route\RouteServiceProvider;
+use Themosis\Tests\Mocks\BasicServiceProviderMock;
 
 class ApplicationTest extends TestCase
 {
@@ -163,7 +164,7 @@ class ApplicationTest extends TestCase
     public function testServiceProvidersAreCorrectlyRegistered()
     {
         $app = new Application();
-        $provider = $this->getMockBuilder('BasicServiceProvider')->setMethods(['register', 'boot'])->getMock();
+        $provider = $this->getMockBuilder(BasicServiceProviderMock::class)->onlyMethods(['register', 'boot'])->getMock();
         $class = get_class($provider);
         $provider->expects($this->once())->method('register');
         $app->register($provider);

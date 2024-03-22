@@ -1,5 +1,8 @@
 <?php
 
+namespace Themosis\Tests\Route;
+
+use DateTime;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Http\Request;
@@ -486,7 +489,7 @@ class RoutesTest extends TestCase
     {
         $router = $this->getWordPressRouter();
 
-        $route = $router->get('home', 'FooController@index')
+        $route = $router->get('home', 'Themosis\Tests\Mocks\ControllerMock@index')
             ->middleware(WordPressBindings::class);
 
         $this->assertEquals(
@@ -703,13 +706,5 @@ class RoutesTest extends TestCase
         });
 
         return $router;
-    }
-}
-
-class FooController extends Controller
-{
-    public function index()
-    {
-        return 'Controller index action';
     }
 }
