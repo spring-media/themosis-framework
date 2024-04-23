@@ -1,5 +1,7 @@
 <?php
 
+namespace Themosis\Tests\Hook;
+
 use PHPUnit\Framework\TestCase;
 use Themosis\Core\Application;
 use Themosis\Hook\FilterBuilder;
@@ -52,7 +54,7 @@ class FilterTest extends TestCase
         $filter->expects($this->exactly(2))
             ->method('addFilter');
 
-        $filter->add('custom-filter', 'AFilterClassForTest', 4, 2);
+        $filter->add('custom-filter', AFilterClassForTest::class, 4, 2);
 
         // Check if this filter is registered.
         $this->assertTrue($filter->exists('custom-filter'));
@@ -76,7 +78,7 @@ class FilterTest extends TestCase
         $this->assertEquals(2, $filter->getCallback('custom-filter')[2]);
 
         // Run filter with pre-defined method name.
-        $filter->add('another-filter', 'AFilterClassForTest@awesomeFilter');
+        $filter->add('another-filter', '\Themosis\Tests\Hook\AFilterClassForTest@awesomeFilter');
 
         // Check this filter is registered.
         $this->assertTrue($filter->exists('another-filter'));

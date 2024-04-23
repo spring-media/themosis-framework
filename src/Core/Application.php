@@ -28,6 +28,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Themosis\Core\Bootstrap\EnvironmentLoader;
 use Themosis\Core\Events\LocaleUpdated;
+use Themosis\Hook\Hookable;
 use Themosis\Route\RouteServiceProvider;
 
 class Application extends Container implements ApplicationContract, CachesConfiguration, CachesRoutes, HttpKernelInterface
@@ -1288,6 +1289,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
     {
         // Build a "Hookable" instance.
         // Hookable instances must extend the "Hookable" class.
+        /** @var Hookable $instance */
         $instance = new $hook($this);
         $hooks = (array) $instance->hook;
 
@@ -1296,7 +1298,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
         }
 
         if (! empty($hooks)) {
-            $this['action']->add($hooks, [$instance, 'register'], $instance->priority);
+            $this['action']->add($hooks, [$instance, 'register'], $instance->priority, $instance->acceptedArgs);
         } else {
             $instance->register();
         }
