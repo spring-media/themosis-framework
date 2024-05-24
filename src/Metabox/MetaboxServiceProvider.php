@@ -7,15 +7,10 @@ use League\Fractal\Manager;
 use League\Fractal\Serializer\ArraySerializer;
 use Themosis\Metabox\Resources\MetaboxResource;
 use Themosis\Metabox\Resources\Transformers\MetaboxTransformer;
+use Illuminate\Contracts\Support\DeferrableProvider;
 
-class MetaboxServiceProvider extends ServiceProvider
+class MetaboxServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    /**
-     * Defer metabox factory.
-     *
-     * @var bool
-     */
-    protected $defer = true;
 
     public function register()
     {
