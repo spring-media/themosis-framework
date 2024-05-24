@@ -14,6 +14,12 @@
       "homepage": "https://www.themosis.com/"
     }
   ],
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/skcheung/laravel-framework.git"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "Themosis\\": "src/"
@@ -30,54 +36,37 @@
   "require": {
     "php": "^8.2",
     "composer/installers": "^1.12",
-    "dragonmantank/cron-expression": "^3.0.2",
+    "dragonmantank/cron-expression": "^3.3.2",
     "filp/whoops": "^2.1",
     "guzzlehttp/guzzle": "^7.2",
-    "illuminate/auth": "^11.0",
-    "illuminate/broadcasting": "^11.0",
-    "illuminate/bus": "^11.0",
-    "illuminate/cache": "^11.0",
-    "illuminate/config": "^11.0",
-    "illuminate/console": "^11.0",
-    "illuminate/container": "^11.0",
-    "illuminate/cookie": "^11.0",
-    "illuminate/database": "^11.0",
-    "illuminate/encryption": "^11.0",
-    "illuminate/events": "^11.0",
-    "illuminate/filesystem": "^11.0",
-    "illuminate/hashing": "^11.0",
-    "illuminate/http": "^11.0",
-    "illuminate/log": "^11.0",
-    "illuminate/mail": "^11.0",
-    "illuminate/notifications": "^11.0",
-    "illuminate/pagination": "^11.0",
-    "illuminate/queue": "^11.0",
-    "illuminate/redis": "^11.0",
-    "illuminate/routing": "^11.0",
-    "illuminate/session": "^11.0",
-    "illuminate/support": "^11.0",
-    "illuminate/testing": "^11.0",
-    "illuminate/validation": "^11.0",
-    "illuminate/view": "^11.0",
+    "laravel/framework": "^10.0",
+    "laravel/sanctum": "^3.2",
     "laravel/tinker": "^2.8",
     "laravel/ui": "^4.2",
-    "league/flysystem": "^3.0",
+    "league/flysystem": "^3.8.0",
     "league/fractal": "^0.20",
     "paragonie/sodium_compat": "^1.15",
-    "predis/predis": "^1.1",
-    "ramsey/uuid": "^4.1",
+    "predis/predis": "^2.1",
+    "ramsey/uuid": "^4.7",
     "spatie/enum": "^3.13",
-    "symfony/property-access": "^5.4",
+    "spatie/laravel-ignition": "^2.0",
+    "symfony/property-access": "^6.2",
     "twig/twig": " ^3.1",
-    "vlucas/phpdotenv": "^5.2"
+    "vlucas/phpdotenv": "^5.4.1"
   },
   "require-dev": {
     "beyondcode/laravel-dump-server": "^1.7",
     "fakerphp/faker": "^1.9.1",
     "friendsofphp/php-cs-fixer": "^3.8",
+    "laravel/pint": "^1.0",
+    "laravel/sail": "^1.0.1",
+    "mockery/mockery": "^1.4.4",
+    "nunomaduro/collision": "^7.0",
     "johnpbloch/wordpress-core": "^6.0",
-    "phpunit/phpunit": "^9.0",
-    "symfony/var-dumper": "^5.4"
+    "pestphp/pest": "^1.22",
+    "pestphp/pest-plugin-laravel": "^1.4",
+    "phpunit/phpunit": "^10",
+    "symfony/var-dumper": "^6.0"
   },
   "scripts": {
     "test": "phpunit",

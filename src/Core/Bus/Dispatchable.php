@@ -62,18 +62,6 @@ trait Dispatchable
     }
 
     /**
-     * Dispatch a command to its appropriate handler in the current process.
-     *
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     *
-     * @return mixed
-     */
-    public static function dispatchNow()
-    {
-        return app(Dispatcher::class)->dispatchNow(new static(...func_get_args()));
-    }
-
-    /**
      * Dispatch a command to its appropriate handle after the current process.
      *
      * @throws \Illuminate\Contracts\Container\BindingResolutionException

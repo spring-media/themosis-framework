@@ -1,6 +1,6 @@
 <?php
 
-namespace Themosis\Core\Exceptions;
+namespace Themosis\Core\Exceptions\Whoops;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
@@ -11,15 +11,15 @@ class WhoopsHandler
     /**
      * Create a new Whoops handler for debug mode.
      *
-     * @return PrettyPageHandler
+     * @return \Whoops\Handler\PrettyPageHandler
      */
     public function forDebug()
     {
-        return tap(new PrettyPageHandler(), function ($handler) {
+        return tap(new PrettyPageHandler, function ($handler) {
             $handler->handleUnconditionally(true);
 
             $this->registerApplicationPaths($handler)
-                ->registerBlackList($handler)
+                ->registerBlacklist($handler)
                 ->registerEditor($handler);
         });
     }
@@ -27,14 +27,13 @@ class WhoopsHandler
     /**
      * Register the application paths with the handler.
      *
-     * @param PrettyPageHandler $handler
-     *
+     * @param  \Whoops\Handler\PrettyPageHandler  $handler
      * @return $this
      */
     protected function registerApplicationPaths($handler)
     {
         $handler->setApplicationPaths(
-            array_flip($this->directoriesExceptVendor()),
+            array_flip($this->directoriesExceptVendor())
         );
 
         return $this;
@@ -43,24 +42,20 @@ class WhoopsHandler
     /**
      * Get the application paths except for the "vendor" directory.
      *
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     *
      * @return array
      */
     protected function directoriesExceptVendor()
     {
         return Arr::except(
-            array_flip((new Filesystem())->directories(base_path())),
-            [base_path('vendor')],
+            array_flip((new Filesystem)->directories(base_path())),
+            [base_path('vendor')]
         );
     }
-
 
     /**
      * Register the blacklist with the handler.
      *
-     * @param \Whoops\Handler\PrettyPageHandler $handler
-     *
+     * @param  \Whoops\Handler\PrettyPageHandler  $handler
      * @return $this
      */
     protected function registerBlacklist($handler)
@@ -77,8 +72,7 @@ class WhoopsHandler
     /**
      * Register the editor with the handler.
      *
-     * @param \Whoops\Handler\PrettyPageHandler $handler
-     *
+     * @param  \Whoops\Handler\PrettyPageHandler  $handler
      * @return $this
      */
     protected function registerEditor($handler)
@@ -90,3 +84,4 @@ class WhoopsHandler
         return $this;
     }
 }
+

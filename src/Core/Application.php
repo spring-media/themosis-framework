@@ -4,11 +4,11 @@ namespace Themosis\Core;
 
 use Closure;
 use Composer\Autoload\ClassLoader;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application as ApplicationContract;
 use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Contracts\Foundation\CachesRoutes;
+use Illuminate\Contracts\Foundation\MaintenanceMode as MaintenanceModeContract;
 use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
 use Illuminate\Events\EventServiceProvider;
 use Illuminate\Filesystem\Filesystem;
@@ -30,7 +30,7 @@ use Themosis\Core\Bootstrap\EnvironmentLoader;
 use Themosis\Core\Events\LocaleUpdated;
 use Themosis\Route\RouteServiceProvider;
 
-class Application extends Container implements
+class Application extends \Illuminate\Foundation\Application implements
     ApplicationContract,
     CachesConfiguration,
     CachesRoutes,
@@ -40,13 +40,6 @@ class Application extends Container implements
      * Themosis framework version.
      */
     public const THEMOSIS_VERSION = '3.1.0';
-
-    /**
-     * Laravel version.
-     *
-     * @var string
-     */
-    public const VERSION = '8.0.0';
 
     /**
      * Application textdomain.
@@ -159,22 +152,9 @@ class Application extends Container implements
     }
 
     /**
-     * Register basic bindings into the container.
-     */
-    protected function registerBaseBindings()
-    {
-        static::setInstance($this);
-        $this->instance('app', $this);
-        $this->instance(Container::class, $this);
-        $this->instance(PackageManifest::class, new PackageManifest(
-            new Filesystem(),
-            $this->basePath(),
-            $this->getCachedPackagesPath(),
-        ));
-    }
-
-    /**
-     * Register base service providers.
+     * Register all of the base service providers.
+     *
+     * @return void
      */
     protected function registerBaseServiceProviders()
     {
@@ -186,7 +166,7 @@ class Application extends Container implements
     /**
      * Register the core class aliases in the container.
      */
-    protected function registerCoreContainerAliases()
+    public function registerCoreContainerAliases()
     {
         $list = [
             'action' => [
@@ -286,6 +266,10 @@ class Application extends Container implements
             'log' => [
                 \Illuminate\Log\LogManager::class,
                 \Psr\Log\LoggerInterface::class,
+            ],
+            'mail.manager' => [
+                \Illuminate\Mail\MailManager::class,
+                \Illuminate\Contracts\Mail\Factory::class
             ],
             'mailer' => [
                 \Illuminate\Mail\Mailer::class,
@@ -742,6 +726,16 @@ class Application extends Container implements
     }
 
     /**
+     * Get an instance of the maintenance mode manager implementation.
+     *
+     * @return \Illuminate\Contracts\Foundation\MaintenanceMode
+     */
+    public function maintenanceMode()
+    {
+        return $this->make(MaintenanceModeContract::class);
+    }
+
+    /**
      * Determine if the application is currently down for maintenance.
      *
      * @throws \Illuminate\Container\EntryNotFoundException
@@ -889,7 +883,7 @@ class Application extends Container implements
      *
      * @param array $callbacks
      */
-    protected function fireAppCallbacks(array $callbacks)
+    protected function fireAppCallbacks(array &$callbacks)
     {
         foreach ($callbacks as $callback) {
             call_user_func($callback, $this);
@@ -932,7 +926,7 @@ class Application extends Container implements
         $this->bootedCallbacks[] = $callback;
 
         if ($this->isBooted()) {
-            $this->fireAppCallbacks([$callback]);
+            $callback($this);
         }
     }
 
@@ -991,7 +985,7 @@ class Application extends Container implements
      *
      * @return Response A Response instance
      */
-    public function handle(SymfonyRequest $request, $type = self::MASTER_REQUEST, $catch = true)
+    public function handle(SymfonyRequest $request, int $type = self::MASTER_REQUEST, bool $catch = true): Response
     {
         return $this[HttpKernelContract::class]->handle(Request::createFromBase($request));
     }
@@ -1422,7 +1416,7 @@ class Application extends Container implements
      *
      * @return $this
      */
-    public function terminating(Closure $callback)
+    public function terminating($callback)
     {
         $this->terminatingCallbacks[] = $callback;
 
@@ -1574,6 +1568,26 @@ class Application extends Container implements
     public function getLocale()
     {
         return $this['config']->get('app.locale');
+    }
+
+    /**
+     * Get the current application locale.
+     *
+     * @return string
+     */
+    public function currentLocale()
+    {
+        return $this->getLocale();
+    }
+
+    /**
+     * Get the current application fallback locale.
+     *
+     * @return string
+     */
+    public function getFallbackLocale()
+    {
+        return $this['config']->get('app.fallback_locale');
     }
 
     /**

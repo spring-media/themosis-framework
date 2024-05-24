@@ -4,30 +4,6 @@ namespace Themosis\Core\Console;
 
 use Illuminate\Console\Command;
 
-class OptimizeCommand extends Command
+class OptimizeCommand extends \Illuminate\Foundation\Console\OptimizeCommand
 {
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $name = 'optimize';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Cache the framework bootstrap files';
-
-    /**
-     * Execute the console command.
-     */
-    public function handle()
-    {
-        $this->call('config:cache');
-        $this->call('route:cache');
-
-        $this->info('Files cached successfully!');
-    }
 }
