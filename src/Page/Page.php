@@ -97,11 +97,6 @@ class Page implements PageInterface
     protected $errors = 0;
 
     /**
-     * @var int
-     */
-    protected $offset = 0;
-
-    /**
      * @var array
      */
     protected $routes = [];
@@ -563,7 +558,7 @@ class Page implements PageInterface
                 }
 
                 register_setting($this->getSlug(), $setting->getName(), [
-                    'sanitize_callback' => [$this, 'sanitizeSetting'],
+                    'sanitize_callback' => fn($value) => $this->sanitizeSetting($value, $setting),
                     'default' => $setting->getOption('data', ''),
                     'show_in_rest' => $showInRest,
                     'type' => $setting->getOption('data_type', 'string'),
@@ -601,40 +596,11 @@ class Page implements PageInterface
 
     /**
      * Sanitize the setting before save.
-     *
-     * @param  string|array  $value
-     * @return string|array|null
      */
-    public function sanitizeSetting($value)
+    public function sanitizeSetting($value, FieldTypeInterface $setting)
     {
-        $keys = $this->repository()->getSettings()->collapse()->map(function ($setting) {
-            /** @var FieldTypeInterface $setting */
-            return $setting->getName();
-        });
-
-        $settingName = $keys->slice($this->offset, 1)->first();
         $lastSetting = $this->repository()->getSettings()->collapse()->last();
         $data = collect($_POST);
-
-        if ($this->offset > $keys->count() - 1) {
-            if (empty($value)) {
-                return null;
-            }
-
-            // Sanitize is called one more time with a valid value.
-            // Let's get the $settingName based on the given value
-            // as we can't rely anymore on the offset.
-            $settingName = $data->search($value, true);
-
-            if (! $settingName) {
-                return null;
-            }
-
-            // Let's add a "fake" error to avoid duplicate success messages.
-            $this->errors++;
-        }
-
-        $setting = $this->repository()->getSettingByName($settingName);
 
         $validator = $this->validator->make(
             $data->all(),
@@ -642,9 +608,6 @@ class Page implements PageInterface
             $this->getSettingMessages($setting),
             $this->getSettingPlaceholder($setting),
         );
-
-        // Update setting offset.
-        $this->offset++;
 
         /** @var Validator $validator */
         if ($validator->fails()) {
@@ -663,7 +626,7 @@ class Page implements PageInterface
             return get_option($setting->getName());
         }
 
-        if ($settingName === $lastSetting->getName() && ! $this->errors) {
+        if ($setting->getName() === $lastSetting->getName() && ! $this->errors) {
             $this->addSettingsSuccessMessage($this->getSlug());
         }
 
