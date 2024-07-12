@@ -628,6 +628,9 @@ class Page implements PageInterface
 
         if ($setting->getName() === $lastSetting->getName() && ! $this->errors) {
             $this->addSettingsSuccessMessage($this->getSlug());
+
+            // Let's add a "fake" error to avoid duplicate success messages.
+            $this->errors++;
         }
 
         $setting->setValue($value);
