@@ -144,7 +144,7 @@ class ChoiceType extends BaseType implements CheckableInterface, SelectableInter
     /**
      * Return choice type field options.
      */
-    public function getOptions(array $excludes = null): array
+    public function getOptions(?array $excludes = null): array
     {
         $options = parent::getOptions($excludes);
 

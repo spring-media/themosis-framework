@@ -622,7 +622,7 @@ class Form extends HtmlBuilder implements FormInterface, FieldTypeInterface
      *
      * @param  array  $excludes
      */
-    public function getOptions(array $excludes = null): array
+    public function getOptions(?array $excludes = null): array
     {
         if (! is_null($excludes)) {
             return array_filter($this->options, function ($key) use ($excludes) {

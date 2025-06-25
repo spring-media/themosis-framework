@@ -18,7 +18,7 @@ trait ValidatesRequests
      *
      * @throws ValidationException
      */
-    public function validateWith($validator, Request $request = null)
+    public function validateWith($validator, ?Request $request = null)
     {
         $request = $request ?: request();
 
