@@ -163,12 +163,13 @@ class NullMessageBag implements MessageBag
     }
 
     /**
-      * {@inheritdoc}
+     * Remove one or many messages.
      *
+     * @param string|array $keys
      * @return $this|MessageBag
-      */
-     public function forget($key)
-     {
+     */
+    public function forget($keys)
+    {
         return $this;
-     }
+    }
 }
