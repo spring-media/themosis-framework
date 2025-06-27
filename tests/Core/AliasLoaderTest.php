@@ -3,7 +3,7 @@
 namespace Themosis\Tests\Core;
 
 use PHPUnit\Framework\TestCase;
-use Themosis\Core\AliasLoader;
+use Illuminate\Foundation\AliasLoader;
 
 class AliasLoaderTest extends TestCase
 {

@@ -4,7 +4,7 @@ namespace Themosis\Core\Support\Providers;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Themosis\Core\Events\DiscoverEvents;
+use Illuminate\Foundation\Events\DiscoverEvents;
 
 class EventServiceProvider extends ServiceProvider
 {

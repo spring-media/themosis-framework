@@ -4,7 +4,7 @@ namespace Themosis\Core\Console;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Themosis\Core\Bus\Dispatchable;
+use Illuminate\Foundation\Bus\Dispatchable;
 
 class QueueCommand implements ShouldQueue
 {

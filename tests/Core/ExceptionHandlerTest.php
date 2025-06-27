@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Themosis\Core\Exceptions\Handler;
+use Illuminate\Foundation\Exceptions\Handler;
 
 class TestRequest
 {

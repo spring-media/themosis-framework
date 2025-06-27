@@ -12,6 +12,7 @@ use Illuminate\Contracts\Foundation\CachesRoutes;
 use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
 use Illuminate\Events\EventServiceProvider;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Http\Request;
 use Illuminate\Log\LogServiceProvider;
 use Illuminate\Support\Arr;
@@ -26,8 +27,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Themosis\Core\Bootstrap\EnvironmentLoader;
-use Themosis\Core\Events\LocaleUpdated;
+use Illuminate\Foundation\Events\LocaleUpdated;
 use Themosis\Hook\Hookable;
 use Themosis\Route\RouteServiceProvider;
 
@@ -1509,7 +1509,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
      */
     public function afterLoadingEnvironment(Closure $callback)
     {
-        $this->afterBootstrapping(EnvironmentLoader::class, $callback);
+        $this->afterBootstrapping(LoadEnvironmentVariables::class, $callback);
     }
 
     /**

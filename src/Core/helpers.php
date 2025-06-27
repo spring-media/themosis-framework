@@ -11,10 +11,12 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Foundation\Bus\PendingDispatch;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Log\LogManager;
+use Illuminate\Queue\CallQueuedClosure;
 use Illuminate\Queue\SerializableClosure;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Date;
@@ -24,7 +26,6 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Themosis\Core\Bus\PendingDispatch;
 use Themosis\Core\Mix;
 
 if (! function_exists('abort')) {

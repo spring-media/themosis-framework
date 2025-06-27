@@ -39,13 +39,13 @@ class Kernel implements KernelContract
      * @var array
      */
     protected $bootstrappers = [
-        \Themosis\Core\Bootstrap\EnvironmentLoader::class,
-        \Themosis\Core\Bootstrap\ConfigurationLoader::class,
-        \Themosis\Core\Bootstrap\ExceptionHandler::class,
-        \Themosis\Core\Bootstrap\RegisterFacades::class,
-        \Themosis\Core\Bootstrap\SetRequestForConsole::class,
-        \Themosis\Core\Bootstrap\RegisterProviders::class,
-        \Themosis\Core\Bootstrap\BootProviders::class,
+        \Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class,
+        \Illuminate\Foundation\Bootstrap\LoadConfiguration::class,
+        \Illuminate\Foundation\Bootstrap\HandleExceptions::class,
+        \Illuminate\Foundation\Bootstrap\RegisterFacades::class,
+        \Illuminate\Foundation\Bootstrap\SetRequestForConsole::class,
+        \Illuminate\Foundation\Bootstrap\RegisterProviders::class,
+        \Illuminate\Foundation\Bootstrap\BootProviders::class,
     ];
 
     /**
@@ -180,11 +180,11 @@ class Kernel implements KernelContract
      * Register a closure based command with the application.
      *
      * @param  string  $signature
-     * @return ClosureCommand
+     * @return \Illuminate\Foundation\Console\ClosureCommand
      */
-    public function command($signature, \Closure $callback)
+    public function command($signature, \Closure $callback): \Illuminate\Foundation\Console\ClosureCommand
     {
-        $command = new ClosureCommand($signature, $callback);
+        $command = new \Illuminate\Foundation\Console\ClosureCommand($signature, $callback);
 
         Artisan::starting(function ($artisan) use ($command) {
             $artisan->add($command);
@@ -312,7 +312,8 @@ class Kernel implements KernelContract
      * Queue the given console command.
      *
      * @param  string  $command
-     * @return \Themosis\Core\Bus\PendingDispatch
+     *
+     * @return \Illuminate\Foundation\Bus\PendingDispatch
      */
     public function queue($command, array $parameters = [])
     {

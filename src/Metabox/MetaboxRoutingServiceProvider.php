@@ -2,7 +2,7 @@
 
 namespace Themosis\Metabox;
 
-use Themosis\Core\Support\Providers\RouteServiceProvider;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Themosis\Support\Facades\Route;
 
 class MetaboxRoutingServiceProvider extends RouteServiceProvider
