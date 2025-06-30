@@ -2,6 +2,7 @@
 
 namespace Themosis\Core\Providers;
 
+use Illuminate\Foundation\Providers\FormRequestServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\AggregateServiceProvider;
 use Illuminate\Support\Facades\URL;
@@ -14,13 +15,13 @@ class CoreServiceProvider extends AggregateServiceProvider
      * @var array
      */
     protected $providers = [
-        \Illuminate\Foundation\Providers\FormRequestServiceProvider::class,
+        FormRequestServiceProvider::class,
     ];
 
     /**
      * Register the service provider.
      */
-    public function register()
+    public function register(): void
     {
         parent::register();
 
@@ -31,7 +32,7 @@ class CoreServiceProvider extends AggregateServiceProvider
     /**
      * Register the "validate" macro on the request.
      */
-    public function registerRequestValidate()
+    public function registerRequestValidate(): void
     {
         Request::macro('validate', function (array $rules, ...$params) {
             return validator()->validate($this->all(), $rules, ...$params);
@@ -41,7 +42,7 @@ class CoreServiceProvider extends AggregateServiceProvider
     /**
      * Register the "hasValidSignature" macro on the request.
      */
-    public function registerRequestSignatureValidation()
+    public function registerRequestSignatureValidation(): void
     {
         Request::macro('hasValidSignature', function ($absolute = true) {
             return URL::hasValidSignature($this, $absolute);
@@ -51,7 +52,7 @@ class CoreServiceProvider extends AggregateServiceProvider
     /**
      * Publish core assets.
      */
-    public function boot()
+    public function boot(): void
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
