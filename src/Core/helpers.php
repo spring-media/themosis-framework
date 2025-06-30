@@ -11,18 +11,17 @@ use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Foundation\Bus\PendingClosureDispatch;
 use Illuminate\Foundation\Bus\PendingDispatch;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Log\LogManager;
 use Illuminate\Queue\CallQueuedClosure;
-use Illuminate\Queue\SerializableClosure;
+use Illuminate\Routing\Router;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\HtmlString;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -258,18 +257,12 @@ if (! function_exists('cache')) {
         }
 
         if (! is_array($arguments[0])) {
-            throw new Exception(
-                'When setting a value in the cache, you must pass an array of key / value pairs.',
+            throw new InvalidArgumentException(
+                'When setting a value in the cache, you must pass an array of key / value pairs.'
             );
         }
 
-        if (! isset($arguments[1])) {
-            throw new Exception(
-                'You must specify an expiration time when setting a value in the cache.',
-            );
-        }
-
-        return app('cache')->put(key($arguments[0]), reset($arguments[0]), $arguments[1]);
+        return app('cache')->put(key($arguments[0]), reset($arguments[0]), $arguments[1] ?? null);
     }
 }
 
@@ -427,25 +420,9 @@ if (! function_exists('dispatch')) {
      */
     function dispatch($job)
     {
-        if ($job instanceof Closure) {
-            $job = new CallQueuedClosure(new SerializableClosure($job));
-        }
-
-        return new PendingDispatch($job);
-    }
-}
-
-if (! function_exists('dispatch_now')) {
-    /**
-     * Dispatch a command to its appropriate handler in the current process.
-     *
-     * @param  mixed  $job
-     * @param  null  $handler
-     * @return mixed
-     */
-    function dispatch_now($job, $handler = null)
-    {
-        return app(Dispatcher::class)->dispatchNow($job, $handler);
+        return $job instanceof Closure
+            ? new PendingClosureDispatch(CallQueuedClosure::create($job))
+            : new PendingDispatch($job);
     }
 }
 
@@ -489,6 +466,31 @@ if (! function_exists('event')) {
     function event(...$args)
     {
         return app('events')->dispatch(...$args);
+    }
+}
+
+if (! function_exists('fake') && class_exists(\Faker\Factory::class)) {
+    /**
+     * Get a faker instance.
+     *
+     * @param  string|null  $locale
+     * @return \Faker\Generator
+     */
+    function fake($locale = null)
+    {
+        if (app()->bound('config')) {
+            $locale ??= app('config')->get('app.faker_locale');
+        }
+
+        $locale ??= 'en_US';
+
+        $abstract = \Faker\Generator::class.':'.$locale;
+
+        if (! app()->bound($abstract)) {
+            app()->singleton($abstract, fn () => \Faker\Factory::create($locale));
+        }
+
+        return app()->make($abstract);
     }
 }
 
@@ -611,6 +613,19 @@ if (! function_exists('logger')) {
         }
 
         return app('log')->debug($message, $context);
+    }
+}
+
+if (! function_exists('lang_path')) {
+    /**
+     * Get the path to the language folder.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    function lang_path($path = '')
+    {
+        return app()->langPath($path);
     }
 }
 
@@ -739,6 +754,35 @@ if (! function_exists('plugins_path')) {
     }
 }
 
+if (! function_exists('precognitive')) {
+    /**
+     * Handle a Precognition controller hook.
+     *
+     * @param  null|callable  $callable
+     * @return mixed
+     */
+    function precognitive($callable = null)
+    {
+        $callable ??= function () {
+            //
+        };
+
+        $payload = $callable(function ($default, $precognition = null) {
+            $response = request()->isPrecognitive()
+                ? ($precognition ?? $default)
+                : $default;
+
+            abort(Router::toResponse(request(), value($response)));
+        });
+
+        if (request()->isPrecognitive()) {
+            abort(204);
+        }
+
+        return $payload;
+    }
+}
+
 if (! function_exists('public_path')) {
     /**
      * Get the path to the public folder.
@@ -782,11 +826,43 @@ if (! function_exists('report')) {
      */
     function report($exception)
     {
-        if ($exception instanceof Throwable &&
-            ! $exception instanceof Exception) {
-            $exception = new FatalThrowableError($exception);
+        if (is_string($exception)) {
+            $exception = new Exception($exception);
         }
+
         app(ExceptionHandler::class)->report($exception);
+    }
+}
+
+if (! function_exists('report_if')) {
+    /**
+     * Report an exception if the given condition is true.
+     *
+     * @param  bool  $boolean
+     * @param  \Throwable|string  $exception
+     * @return void
+     */
+    function report_if($boolean, $exception)
+    {
+        if ($boolean) {
+            report($exception);
+        }
+    }
+}
+
+if (! function_exists('report_unless')) {
+    /**
+     * Report an exception unless the given condition is true.
+     *
+     * @param  bool  $boolean
+     * @param  \Throwable|string  $exception
+     * @return void
+     */
+    function report_unless($boolean, $exception)
+    {
+        if (! $boolean) {
+            report($exception);
+        }
     }
 }
 
@@ -908,9 +984,7 @@ if (! function_exists('route')) {
      */
     function route($name, $parameters = [], $absolute = true)
     {
-        $path = app('url')->route($name, $parameters, false);
-
-        return ($absolute) ? rootUrl($path) : $path;
+        return app('url')->route($name, $parameters, $absolute);
     }
 }
 
@@ -990,6 +1064,22 @@ if (! function_exists('themes_path')) {
     function themes_path($path = '')
     {
         return app()->themesPath($path);
+    }
+}
+
+if (! function_exists('to_route')) {
+    /**
+     * Create a new redirect response to a named route.
+     *
+     * @param  string  $route
+     * @param  mixed  $parameters
+     * @param  int  $status
+     * @param  array  $headers
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    function to_route($route, $parameters = [], $status = 302, $headers = [])
+    {
+        return redirect()->route($route, $parameters, $status, $headers);
     }
 }
 
