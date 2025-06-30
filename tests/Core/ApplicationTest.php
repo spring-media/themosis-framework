@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Themosis\Core\Application;
-use Themosis\Core\PackageManifest;
+use Illuminate\Foundation\PackageManifest;
 use Themosis\Route\RouteServiceProvider;
 
 class ApplicationTest extends TestCase
@@ -133,7 +133,7 @@ class ApplicationTest extends TestCase
         );
         $this->assertInstanceOf(
             PackageManifest::class,
-            $app['Themosis\Core\PackageManifest'],
+            $app['Illuminate\Foundation\PackageManifest'],
             'Package manifest is not bound',
         );
     }

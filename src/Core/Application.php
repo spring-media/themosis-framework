@@ -13,6 +13,7 @@ use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
 use Illuminate\Events\EventServiceProvider;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
+use Illuminate\Foundation\PackageManifest;
 use Illuminate\Http\Request;
 use Illuminate\Log\LogServiceProvider;
 use Illuminate\Support\Arr;
@@ -172,7 +173,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
         static::setInstance($this);
         $this->instance('app', $this);
         $this->instance(Container::class, $this);
-        $this->instance(PackageManifest::class, new PackageManifest(
+        $this->instance(
+            PackageManifest::class, new PackageManifest(
             new Filesystem(),
             $this->basePath(),
             $this->getCachedPackagesPath(),
@@ -739,7 +741,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
     {
         $args = $_SERVER['argv'] ?? null;
 
-        return $this['env'] = (new EnvironmentDetector())->detect($callback, $args);
+        return $this['env'] = new \Illuminate\Foundation\EnvironmentDetector()->detect($callback, $args);
     }
 
     /**
@@ -782,7 +784,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
         $providers->splice(1, 0, [$this->make(PackageManifest::class)->providers()]);
 
-        (new ProviderRepository($this, new Filesystem(), $this->getCachedServicesPath()))
+        new \Illuminate\Foundation\ProviderRepository($this, new Filesystem(), $this->getCachedServicesPath())
             ->load($providers->collapse()->toArray());
     }
 

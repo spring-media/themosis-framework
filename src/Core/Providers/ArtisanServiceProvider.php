@@ -26,6 +26,7 @@ use Illuminate\Database\Console\Migrations\StatusCommand;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Database\Console\Seeds\SeederMakeCommand;
 use Illuminate\Database\Console\WipeCommand;
+use Illuminate\Foundation\Console\ObserverMakeCommand;
 use Illuminate\Notifications\Console\NotificationTableCommand;
 use Illuminate\Queue\Console\BatchesTableCommand;
 use Illuminate\Queue\Console\ClearCommand as QueueClearCommand;
@@ -58,43 +59,42 @@ use Themosis\Core\Console\DropinClearCommand;
 use Illuminate\Foundation\Console\EnvironmentCommand;
 use Illuminate\Foundation\Console\EventCacheCommand;
 use Illuminate\Foundation\Console\EventClearCommand;
-use Themosis\Core\Console\EventGenerateCommand;
+use Illuminate\Foundation\Console\EventGenerateCommand;
 use Themosis\Core\Console\EventListCommand;
-use Themosis\Core\Console\EventMakeCommand;
-use Themosis\Core\Console\ExceptionMakeCommand;
+use Illuminate\Foundation\Console\EventMakeCommand;
+use Illuminate\Foundation\Console\ExceptionMakeCommand;
 use Themosis\Core\Console\FormMakeCommand;
 use Themosis\Core\Console\HookMakeCommand;
-use Themosis\Core\Console\JobMakeCommand;
-use Themosis\Core\Console\KeyGenerateCommand;
-use Themosis\Core\Console\ListenerMakeCommand;
-use Themosis\Core\Console\MailMakeCommand;
-use Themosis\Core\Console\ModelMakeCommand;
-use Themosis\Core\Console\NotificationMakeCommand;
-use Themosis\Core\Console\ObserverCommand;
-use Themosis\Core\Console\OptimizeClearCommand;
-use Themosis\Core\Console\OptimizeCommand;
-use Themosis\Core\Console\PackageDiscoverCommand;
+use Illuminate\Foundation\Console\JobMakeCommand;
+use Illuminate\Foundation\Console\KeyGenerateCommand;
+use Illuminate\Foundation\Console\ListenerMakeCommand;
+use Illuminate\Foundation\Console\MailMakeCommand;
+use Illuminate\Foundation\Console\ModelMakeCommand;
+use Illuminate\Foundation\Console\NotificationMakeCommand;
+use Illuminate\Foundation\Console\OptimizeClearCommand;
+use Illuminate\Foundation\Console\OptimizeCommand;
+use Illuminate\Foundation\Console\PackageDiscoverCommand;
 use Themosis\Core\Console\PasswordResetTableCommand;
 use Themosis\Core\Console\PluginInstallCommand;
-use Themosis\Core\Console\PolicyMakeCommand;
-use Themosis\Core\Console\ProviderMakeCommand;
+use Illuminate\Foundation\Console\PolicyMakeCommand;
+use Illuminate\Foundation\Console\ProviderMakeCommand;
 use Themosis\Core\Console\PublishFuturePostCommand;
-use Themosis\Core\Console\RequestMakeCommand;
-use Themosis\Core\Console\ResourceMakeCommand;
-use Themosis\Core\Console\RouteCacheCommand;
-use Themosis\Core\Console\RouteClearCommand;
-use Themosis\Core\Console\RouteListCommand;
-use Themosis\Core\Console\RuleMakeCommand;
+use Illuminate\Foundation\Console\RequestMakeCommand;
+use Illuminate\Foundation\Console\ResourceMakeCommand;
+use Illuminate\Foundation\Console\RouteCacheCommand;
+use Illuminate\Foundation\Console\RouteClearCommand;
+use Illuminate\Foundation\Console\RouteListCommand;
+use Illuminate\Foundation\Console\RuleMakeCommand;
 use Themosis\Core\Console\SaltsGenerateCommand;
-use Themosis\Core\Console\ServeCommand;
-use Themosis\Core\Console\StorageLinkCommand;
-use Themosis\Core\Console\StubPublishCommand;
-use Themosis\Core\Console\TestMakeCommand;
+use Illuminate\Foundation\Console\ServeCommand;
+use Illuminate\Foundation\Console\StorageLinkCommand;
+use Illuminate\Foundation\Console\StubPublishCommand;
+use Illuminate\Foundation\Console\TestMakeCommand;
 use Themosis\Core\Console\ThemeInstallCommand;
 use Themosis\Core\Console\UpCommand;
-use Themosis\Core\Console\VendorPublishCommand;
-use Themosis\Core\Console\ViewCacheCommand;
-use Themosis\Core\Console\ViewClearCommand;
+use Illuminate\Foundation\Console\VendorPublishCommand;
+use Illuminate\Foundation\Console\ViewCacheCommand;
+use Illuminate\Foundation\Console\ViewClearCommand;
 use Themosis\Core\Console\WidgetMakeCommand;
 
 class ArtisanServiceProvider extends ServiceProvider implements DeferrableProvider
@@ -762,7 +762,7 @@ class ArtisanServiceProvider extends ServiceProvider implements DeferrableProvid
     protected function registerObserverMakeCommand($alias)
     {
         $this->app->singleton($alias, function ($app) {
-            return new ObserverCommand($app['files']);
+            return new ObserverMakeCommand($app['files']);
         });
     }
 
