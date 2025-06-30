@@ -4,7 +4,7 @@ namespace Themosis\Core\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use Themosis\Core\Support\Providers\EventServiceProvider;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 
 class EventListCommand extends Command
 {
