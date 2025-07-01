@@ -2,7 +2,7 @@
 
 namespace {{ namespace }};
 
-use Themosis\Core\Bus\Dispatchable;
+use Illuminate\Foundation\Bus\Dispatchable;
 
 class {{ class }}
 {
