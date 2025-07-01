@@ -318,7 +318,7 @@ abstract class BaseType extends HtmlBuilder implements \ArrayAccess, \Countable,
     /**
      * Return field options.
      *
-     * @param  ?array  $excludes
+     * @param ?array $excludes
      *
      * @return array
      */

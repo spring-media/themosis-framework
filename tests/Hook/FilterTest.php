@@ -5,6 +5,7 @@ namespace Themosis\Tests\Hook;
 use PHPUnit\Framework\TestCase;
 use Themosis\Core\Application;
 use Themosis\Hook\FilterBuilder;
+use Themosis\Tests\Mocks\FilterMock;
 
 class FilterTest extends TestCase
 {
@@ -22,7 +23,7 @@ class FilterTest extends TestCase
     {
         $filter = $this->getMockBuilder(FilterBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addFilter'])
+            ->onlyMethods(['addFilter'])
             ->getMock();
 
         $filter->expects($this->once())
@@ -48,21 +49,21 @@ class FilterTest extends TestCase
     {
         $filter = $this->getMockBuilder(FilterBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addFilter'])
+            ->onlyMethods(['addFilter'])
             ->getMock();
 
         $filter->expects($this->exactly(2))
             ->method('addFilter');
 
-        $filter->add('custom-filter', AFilterClassForTest::class, 4, 2);
+        $filter->add('custom-filter', FilterMock::class, 4, 2);
 
         // Check if this filter is registered.
         $this->assertTrue($filter->exists('custom-filter'));
 
-        // Check the attached callback is an array with instance of AFilterClassForTest.
+        // Check the attached callback is an array with instance of FilterMock.
         // In this test, we also test the hyphen are converted into an underscore
         // for language compatibility.
-        $class = new AFilterClassForTest();
+        $class = new FilterMock();
         $callback = $filter->getCallback('custom-filter')[0]; // array [instance, 'method']
 
         // Check if method name has been converted with an underscore.
@@ -78,12 +79,12 @@ class FilterTest extends TestCase
         $this->assertEquals(2, $filter->getCallback('custom-filter')[2]);
 
         // Run filter with pre-defined method name.
-        $filter->add('another-filter', '\Themosis\Tests\Hook\AFilterClassForTest@awesomeFilter');
+        $filter->add('another-filter', '\Themosis\Tests\Mocks\FilterMock@awesomeFilter');
 
         // Check this filter is registered.
         $this->assertTrue($filter->exists('another-filter'));
 
-        // Check attached callback is an array with instance of AFilterClassForTest and a method of customFilter.
+        // Check attached callback is an array with instance of FilterMock and a method of customFilter.
         $this->assertEquals([$class, 'awesomeFilter'], $filter->getCallback('another-filter')[0]);
     }
 
@@ -91,7 +92,7 @@ class FilterTest extends TestCase
     {
         $filter = $this->getMockBuilder(FilterBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addFilter'])
+            ->onlyMethods(['addFilter'])
             ->getMock();
 
         $filter->expects($this->once())
@@ -110,7 +111,7 @@ class FilterTest extends TestCase
     {
         $filter = $this->getMockBuilder(FilterBuilder::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['addFilter'])
+            ->onlyMethods(['addFilter'])
             ->getMock();
 
         $filter->expects($this->exactly(3))

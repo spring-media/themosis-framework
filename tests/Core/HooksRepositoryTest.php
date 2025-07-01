@@ -36,7 +36,7 @@ class HooksRepositoryTest extends TestCase
     {
         $action = $this->getMockBuilder(ActionBuilder::class)
                        ->setConstructorArgs([$this->app])
-                       ->setMethods(['addAction'])
+                       ->onlyMethods(['addAction'])
                        ->getMock();
 
         $action->expects($this->once())
