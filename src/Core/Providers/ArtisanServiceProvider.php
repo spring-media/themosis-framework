@@ -100,13 +100,6 @@ use Themosis\Core\Console\WidgetMakeCommand;
 class ArtisanServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     /**
-     * Defer the loading of the provider.
-     *
-     * @var bool
-     */
-    protected $defer = true;
-
-    /**
      * Commands to register.
      *
      * @var array
