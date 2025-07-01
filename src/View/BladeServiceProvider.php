@@ -75,7 +75,7 @@ class BladeServiceProvider extends ServiceProvider
         });
 
         Blade::directive('query', function ($expression) {
-            return '<?php $_query = (is_array(' . $expression . ')) ? new \WP_Query(' . $expression . ') : ' . $expression . '; if ($_query->have_posts()) { while ($_query->have_posts()) { $_query->the_post(); ?>';
+            return '<?php $_query = (is_array('.$expression.')) ? new \WP_Query('.$expression.') : '.$expression.'; if ($_query->have_posts()) { while ($_query->have_posts()) { $_query->the_post(); ?>';
         });
 
         /**
@@ -106,10 +106,10 @@ class BladeServiceProvider extends ServiceProvider
             // Set the view path.
             if (isset($args[1])) {
                 if (is_callable($args[1])) {
-                    $args[1] = call_user_func($args[1]);
+                    $args[1] = "'.{$args[1]}().'";
                 }
 
-                $path = $args[0] . '-' . $args[1];
+                $path = $args[0].'-'.$args[1];
             } else {
                 $path = $args[0];
             }

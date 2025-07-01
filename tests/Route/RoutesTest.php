@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Http\Request;
@@ -11,9 +10,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Themosis\Route\Middleware\WordPressBindings;
 use Themosis\Route\Router;
+use Themosis\Tests\Application;
 
 class RoutesTest extends TestCase
 {
+    use Application;
+
     public function testWordPressHomeRoute()
     {
         $router = $this->getWordPressRouter();
@@ -533,7 +535,7 @@ class RoutesTest extends TestCase
 
         $router = $this->getWordPressRouter();
         $router->get('foo/{age}', ['domain' => 'api.{name}.bar', function ($name, $age) {
-            return $name . $age;
+            return $name.$age;
         }]);
         $this->assertEquals(
             'max35',
@@ -560,7 +562,7 @@ class RoutesTest extends TestCase
 
         $router = $this->getWordPressRouter();
         $router->get('foo/{name}/boom/{age?}/{location?}', function ($name, $age = 25, $location = 'AR') {
-            return $name . $age . $location;
+            return $name.$age.$location;
         });
         $this->assertEquals(
             'wordpress30AR',
@@ -569,7 +571,7 @@ class RoutesTest extends TestCase
 
         $router = $this->getWordPressRouter();
         $router->get('{bar}/{baz?}', function ($name, $age = 25) {
-            return $name . $age;
+            return $name.$age;
         });
         $this->assertEquals('wordpress25', $router->dispatch(Request::create('wordpress', 'GET'))->getContent());
 
@@ -582,7 +584,7 @@ class RoutesTest extends TestCase
 
         $router = $this->getWordPressRouter();
         $router->get('{foo?}/{baz?}', ['as' => 'foo', function ($name = 'julien', $age = 25) {
-            return $name . $age;
+            return $name.$age;
         }]);
         $this->assertEquals('julien25', $router->dispatch(Request::create('/', 'GET'))->getContent());
         $this->assertEquals('marcel25', $router->dispatch(Request::create('marcel', 'GET'))->getContent());
@@ -694,7 +696,7 @@ class RoutesTest extends TestCase
 
     protected function getRouter()
     {
-        $container = new Container();
+        $container = $this->getApplication();
         $router = new Router(new Dispatcher(), $container);
         $container->singleton(Registrar::class, function () use ($router) {
             return $router;

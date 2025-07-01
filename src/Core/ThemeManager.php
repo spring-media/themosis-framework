@@ -60,6 +60,7 @@ class ThemeManager
         'license_uri' => 'License URI',
         'text_domain' => 'Text Domain',
         'domain_path' => 'Domain Path',
+        'template' => 'Template',
     ];
 
     /**
@@ -90,8 +91,7 @@ class ThemeManager
     /**
      * Load the theme. Setup theme requirements.
      *
-     * @param string $path Theme configuration folder path.
-     *
+     * @param  string  $path Theme configuration folder path.
      * @return $this
      */
     public function load(string $path): ThemeManager
@@ -107,7 +107,6 @@ class ThemeManager
     /**
      * Define theme assets directories.
      *
-     * @param array $locations
      *
      * @return $this
      */
@@ -126,7 +125,6 @@ class ThemeManager
     /**
      * Return a theme header property.
      *
-     * @param string $header
      *
      * @return string|null
      */
@@ -148,20 +146,18 @@ class ThemeManager
     /**
      * Return the theme root path.
      *
-     * @param string $path Path to append to the theme base path.
-     *
+     * @param  string  $path Path to append to the theme base path.
      * @return string
      */
     public function getPath(string $path = '')
     {
-        return $this->dirPath . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->dirPath.($path ? DIRECTORY_SEPARATOR.$path : $path);
     }
 
     /**
      * Return the theme root URL.
      *
-     * @param string $path Path to append to the theme base URL.
-     *
+     * @param  string  $path Path to append to the theme base URL.
      * @return string
      */
     public function getUrl(string $path = '')
@@ -172,10 +168,10 @@ class ThemeManager
                 get_home_url(),
                 CONTENT_DIR,
                 $this->getDirectory(),
-            ) . ($path ? '/' . $path : $path);
+            ).($path ? '/'.$path : $path);
         }
 
-        return get_template_directory_uri() . ($path ? '/' . $path : $path);
+        return get_template_directory_uri().($path ? '/'.$path : $path);
     }
 
     /**
@@ -190,8 +186,6 @@ class ThemeManager
 
     /**
      * Load theme configuration files.
-     *
-     * @param string $path
      */
     protected function loadThemeConfiguration(string $path)
     {
@@ -204,7 +198,7 @@ class ThemeManager
     protected function setThemeAutoloading()
     {
         foreach ($this->config->get('theme.autoloading', []) as $ns => $path) {
-            $path = $this->dirPath . '/' . trim($path, '\/');
+            $path = $this->dirPath.'/'.trim($path, '\/');
             $this->loader->addPsr4($ns, $path);
         }
 
@@ -214,7 +208,6 @@ class ThemeManager
     /**
      * Register theme services providers.
      *
-     * @param array $providers
      *
      * @return $this
      */
@@ -230,11 +223,10 @@ class ThemeManager
     /**
      * Register theme views path.
      *
-     * @param array $paths
-     *
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      *
      * @return $this
+     *
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function views(array $paths = [])
     {
@@ -260,7 +252,7 @@ class ThemeManager
                 $location = $path;
             }
 
-            $uri = $this->dirPath . '/' . trim($location, '\/');
+            $uri = $this->dirPath.'/'.trim($location, '\/');
             $factory->getFinder()->addOrderedLocation($uri, $priority);
             $twigLoader->addPath($uri);
         }
@@ -271,22 +263,22 @@ class ThemeManager
     /**
      * Register theme constants.
      */
-    protected function setThemeConstants()
+    protected function setThemeConstants(): void
     {
-        $this->parsedHeaders = $this->headers($this->dirPath . '/style.css', $this->headers);
+        $this->parsedHeaders = $this->headers($this->dirPath.'/style.css', $this->headers);
 
-        // Theme text domain.
-        $textdomain = (isset($this->parsedHeaders['text_domain']) && ! empty($this->parsedHeaders['text_domain']))
-            ? $this->parsedHeaders['text_domain']
-            : 'themosis_theme';
+        $textDomain = $this->parsedHeaders['text_domain'] ?: 'themosis_theme';
 
-        defined('THEME_TD') ? THEME_TD : define('THEME_TD', $textdomain);
+        if ($this->parsedHeaders['template']) {
+            defined('CHILD_THEME_TD') || define('CHILD_THEME_TD', $textDomain);
+        } else {
+            defined('THEME_TD') || define('THEME_TD', $textDomain);
+        }
     }
 
     /**
      * Register theme image sizes.
      *
-     * @param array $sizes
      *
      * @return $this
      */
@@ -305,9 +297,7 @@ class ThemeManager
     /**
      * Return a configuration value.
      *
-     * @param string $key
-     * @param mixed  $default
-     *
+     * @param  mixed  $default
      * @return mixed
      */
     public function config(string $key, $default = null)
@@ -328,7 +318,6 @@ class ThemeManager
     /**
      * Register theme menus locations.
      *
-     * @param array $menus
      *
      * @return $this
      */
@@ -348,8 +337,7 @@ class ThemeManager
     /**
      * Register theme sidebars.
      *
-     * @param array $sidebars
-     *
+     * @param  array  $sidebars
      * @return $this
      */
     public function sidebars($sidebars = [])
@@ -370,8 +358,7 @@ class ThemeManager
     /**
      * Register theme support features.
      *
-     * @param array $features
-     *
+     * @param  array  $features
      * @return $this
      */
     public function support($features = [])
@@ -384,8 +371,7 @@ class ThemeManager
     /**
      * Register theme templates.
      *
-     * @param array $templates
-     *
+     * @param  array  $templates
      * @return $this
      */
     public function templates($templates = [])

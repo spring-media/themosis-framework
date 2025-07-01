@@ -73,6 +73,15 @@ class ThemeManagerTest extends TestCase
         $this->assertEquals('_s', THEME_TD);
     }
 
+    public function testThemeManagerSetChildThemeTextdomainConstant()
+    {
+        $app = $this->getApplication();
+        $app->loadTheme($app->themesPath('underscore-child'), 'config');
+
+        $this->assertTrue(defined('CHILD_THEME_TD'));
+        $this->assertEquals('_c', CHILD_THEME_TD);
+    }
+
     public function testThemeManagerRegisterImageSizes()
     {
         $app = $this->getApplication();
@@ -121,7 +130,7 @@ class ThemeManagerTest extends TestCase
         $theme = $this->getThemeManager();
         $theme = $theme->load($app->themesPath('underscore/config'));
 
-        $theme->includes(__DIR__ . '/../samples/inc');
+        $theme->includes(__DIR__.'/../samples/inc');
 
         $this->assertTrue(defined('THEME_MANAGER_INC'));
         $this->assertTrue(defined('THEME_MANAGER_NESTED_INC'));
