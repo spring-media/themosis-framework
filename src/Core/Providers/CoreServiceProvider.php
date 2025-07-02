@@ -15,6 +15,7 @@ class CoreServiceProvider extends AggregateServiceProvider
      * @var array
      */
     protected $providers = [
+        ArtisanServiceProvider::class,
         FormRequestServiceProvider::class,
     ];
 
