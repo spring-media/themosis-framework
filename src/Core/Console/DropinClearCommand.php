@@ -4,8 +4,10 @@ namespace Themosis\Core\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Themosis\Core\Dropins\WordPressDropins;
 
+#[AsCommand(name: 'dropin:clear')]
 class DropinClearCommand extends Command
 {
     /**

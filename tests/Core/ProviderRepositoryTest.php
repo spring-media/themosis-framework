@@ -4,7 +4,7 @@ namespace Themosis\Tests\Core;
 
 use PHPUnit\Framework\TestCase;
 use Themosis\Core\Application;
-use Themosis\Core\ProviderRepository;
+use Illuminate\Foundation\ProviderRepository;
 
 class TestDeferredProvider extends \Illuminate\Support\ServiceProvider
 {
@@ -36,7 +36,7 @@ class ProviderRepositoryTest extends TestCase
         $app = $this->getMockBuilder('Themosis\Core\Application')
             ->onlyMethods(['register', 'addDeferredServices', 'runningInConsole'])
             ->getMock();
-        $repository = $this->getMockBuilder('Themosis\Core\ProviderRepository')
+        $repository = $this->getMockBuilder('Illuminate\Foundation\ProviderRepository')
             ->setConstructorArgs([
                 $app,
                 $this->getMockBuilder('Illuminate\Filesystem\Filesystem')->getMock(),
@@ -75,7 +75,7 @@ class ProviderRepositoryTest extends TestCase
         $app->method('register');
         $app->method('runningInConsole')->willReturn(false);
 
-        $repository = $this->getMockBuilder('Themosis\Core\ProviderRepository')
+        $repository = $this->getMockBuilder('Illuminate\Foundation\ProviderRepository')
             ->setConstructorArgs([
                 $app,
                 $this->getMockBuilder('Illuminate\Filesystem\Filesystem')->getMock(),
@@ -143,13 +143,13 @@ class ProviderRepositoryTest extends TestCase
         $repo = new ProviderRepository(
             new Application(),
             $files = $this->getMockBuilder('Illuminate\Filesystem\Filesystem')
-                ->onlyMethods(['put'])
+                ->onlyMethods(['replace'])
                 ->getMock(),
             __DIR__.'/services.php',
         );
 
         $files->expects($this->once())
-            ->method('put')
+            ->method('replace')
             ->with(__DIR__.'/services.php', '<?php return '.var_export(['foo'], true).';');
         $result = $repo->writeManifest(['foo']);
         $this->assertEquals(['foo', 'when' => []], $result);

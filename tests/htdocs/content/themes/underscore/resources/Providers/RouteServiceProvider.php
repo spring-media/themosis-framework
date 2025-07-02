@@ -2,7 +2,7 @@
 
 namespace Theme\Providers;
 
-class RouteServiceProvider extends \Themosis\Core\Support\Providers\RouteServiceProvider
+class RouteServiceProvider extends \Illuminate\Foundation\Support\Providers\RouteServiceProvider
 {
     public function register()
     {

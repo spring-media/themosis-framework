@@ -4,7 +4,9 @@ namespace Themosis\Core\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(name: 'salts:generate')]
 class SaltsGenerateCommand extends Command
 {
     use ConfirmableTrait;

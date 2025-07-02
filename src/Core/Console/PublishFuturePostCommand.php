@@ -5,10 +5,12 @@ namespace Themosis\Core\Console;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonTimeZone;
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Themosis\Core\Repositories\PostRepository;
 use Themosis\Core\WordPressLoader;
 use WP_Post;
 
+#[AsCommand(name: 'publish:future-posts')]
 class PublishFuturePostCommand extends Command
 {
     /**

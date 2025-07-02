@@ -3,7 +3,7 @@
 namespace Themosis\Tests\Core;
 
 use PHPUnit\Framework\TestCase;
-use Themosis\Core\EnvironmentDetector;
+use Illuminate\Foundation\EnvironmentDetector;
 
 class EnvironmentDetectorTest extends TestCase
 {

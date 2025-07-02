@@ -4,7 +4,7 @@ namespace Themosis\Tests\Core;
 
 use Illuminate\Filesystem\Filesystem;
 use PHPUnit\Framework\TestCase;
-use Themosis\Core\PackageManifest;
+use Illuminate\Foundation\PackageManifest;
 
 class PackageManifestTest extends TestCase
 {

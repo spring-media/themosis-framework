@@ -4,38 +4,8 @@ namespace Themosis\Core;
 
 use Composer\Script\Event;
 
-class ComposerScripts
+class ComposerScripts extends \Illuminate\Foundation\ComposerScripts
 {
-    /**
-     * Handle the post-install Composer event.
-     */
-    public static function postInstall(Event $event)
-    {
-        require_once $event->getComposer()->getConfig()->get('vendor-dir').'/autoload.php';
-
-        static::clearCompiled();
-    }
-
-    /**
-     * Handle the post-update Composer event.
-     */
-    public static function postUpdate(Event $event)
-    {
-        require_once $event->getComposer()->getConfig()->get('vendor-dir').'/autoload.php';
-
-        static::clearCompiled();
-    }
-
-    /**
-     * Handle the post-autoload-dump Composer event.
-     */
-    public static function postAutoloadDump(Event $event)
-    {
-        require_once $event->getComposer()->getConfig()->get('vendor-dir').'/autoload.php';
-
-        static::clearCompiled();
-    }
-
     /**
      * Clear the cached Themosis bootstrapping files.
      */
@@ -54,14 +24,6 @@ class ComposerScripts
         defined('CONTENT_DIR') ? CONTENT_DIR : define('CONTENT_DIR', 'content');
         defined('WP_CONTENT_DIR') ? WP_CONTENT_DIR : define('WP_CONTENT_DIR', realpath(THEMOSIS_ROOT.DS.THEMOSIS_PUBLIC_DIR.DS.CONTENT_DIR));
 
-        $app = new Application(getcwd());
-
-        if (file_exists($servicesPath = $app->getCachedServicesPath())) {
-            @unlink($servicesPath);
-        }
-
-        if (file_exists($packagesPath = $app->getCachedPackagesPath())) {
-            @unlink($packagesPath);
-        }
+        parent::clearCompiled();
     }
 }

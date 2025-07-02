@@ -3,7 +3,9 @@
 namespace Themosis\Core\Console;
 
 use Illuminate\Console\GeneratorCommand;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(name: 'make:form')]
 class FormMakeCommand extends GeneratorCommand
 {
     /**
