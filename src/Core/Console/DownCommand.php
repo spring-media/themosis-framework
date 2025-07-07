@@ -3,7 +3,9 @@
 namespace Themosis\Core\Console;
 
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(name: 'down')]
 class DownCommand extends Command
 {
     /**

@@ -4,144 +4,35 @@ namespace Themosis\Core;
 
 use Closure;
 use Composer\Autoload\ClassLoader;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application as ApplicationContract;
 use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Contracts\Foundation\CachesRoutes;
-use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
 use Illuminate\Events\EventServiceProvider;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Http\Request;
 use Illuminate\Log\LogServiceProvider;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Env;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Themosis\Core\Bootstrap\EnvironmentLoader;
-use Themosis\Core\Events\LocaleUpdated;
-use Themosis\Hook\Hookable;
 use Themosis\Route\RouteServiceProvider;
 
-use function Illuminate\Filesystem\join_paths;
-
-class Application extends Container implements ApplicationContract, CachesConfiguration, CachesRoutes, HttpKernelInterface
+class Application extends \Illuminate\Foundation\Application implements
+    ApplicationContract,
+    CachesConfiguration,
+    CachesRoutes,
+    HttpKernelInterface
 {
     /**
      * Themosis framework version.
      */
-    public const THEMOSIS_VERSION = '4.0.0';
-
-    /**
-     * Laravel version.
-     *
-     * @var string
-     */
-    public const VERSION = '12.0.0';
+    public const THEMOSIS_VERSION = '12.0.0';
 
     /**
      * Application textdomain.
      */
     public const TEXTDOMAIN = 'themosis';
-
-    /**
-     * Base path of the framework.
-     *
-     * @var string
-     */
-    protected $basePath;
-
-    /**
-     * Path location (directory) of env files.
-     *
-     * @var string
-     */
-    protected $environmentPath;
-
-    /**
-     * Environment file name base.
-     *
-     * @var string
-     */
-    protected $environmentFile = '.env';
-
-    /**
-     * The deferred services and their providers.
-     *
-     * @var array
-     */
-    protected $deferredServices = [];
-
-    /**
-     * All of the registered service providers.
-     *
-     * @var array
-     */
-    protected $serviceProviders = [];
-
-    /**
-     * The names of the loaded service providers.
-     *
-     * @var array
-     */
-    protected $loadedProviders = [];
-
-    /**
-     * Indicates if the application has been bootstrapped or not.
-     *
-     * @var bool
-     */
-    protected $hasBeenBootstrapped = false;
-
-    /**
-     * Indicates if the application has booted.
-     *
-     * @var bool
-     */
-    protected $booted = false;
-
-    /**
-     * List of booting callbacks.
-     *
-     * @var array
-     */
-    protected $bootingCallbacks = [];
-
-    /**
-     * List of booted callbacks.
-     *
-     * @var array
-     */
-    protected $bootedCallbacks = [];
-
-    /**
-     * List of terminating callbacks.
-     *
-     * @var array
-     */
-    protected $terminatingCallbacks = [];
-
-    /**
-     * @var string
-     */
-    protected $namespace;
-
-    /**
-     * The custom public / web path defined by the developer.
-     *
-     * @var string
-     */
-    protected $publicPath;
-
-    protected $storagePath;
 
     public function __construct($basePath = null)
     {
@@ -155,32 +46,9 @@ class Application extends Container implements ApplicationContract, CachesConfig
     }
 
     /**
-     * Get the version number of the application.
+     * Register all of the base service providers.
      *
-     * @return string
-     */
-    public function version()
-    {
-        return static::VERSION;
-    }
-
-    /**
-     * Register basic bindings into the container.
-     */
-    protected function registerBaseBindings()
-    {
-        static::setInstance($this);
-        $this->instance('app', $this);
-        $this->instance(Container::class, $this);
-        $this->instance(PackageManifest::class, new PackageManifest(
-            new Filesystem(),
-            $this->basePath(),
-            $this->getCachedPackagesPath(),
-        ));
-    }
-
-    /**
-     * Register base service providers.
+     * @return void
      */
     protected function registerBaseServiceProviders()
     {
@@ -192,7 +60,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
     /**
      * Register the core class aliases in the container.
      */
-    protected function registerCoreContainerAliases()
+    public function registerCoreContainerAliases()
     {
         $list = [
             'action' => [
@@ -293,6 +161,10 @@ class Application extends Container implements ApplicationContract, CachesConfig
                 \Illuminate\Log\LogManager::class,
                 \Psr\Log\LoggerInterface::class,
             ],
+            'mail.manager' => [
+                \Illuminate\Mail\MailManager::class,
+                \Illuminate\Contracts\Mail\Factory::class
+            ],
             'mailer' => [
                 \Illuminate\Mail\Mailer::class,
                 \Illuminate\Contracts\Mail\Mailer::class,
@@ -374,31 +246,6 @@ class Application extends Container implements ApplicationContract, CachesConfig
     }
 
     /**
-     * Get the base path of the Laravel installation.
-     *
-     * @param  string  $path Optional path to append to the base path.
-     * @return string
-     */
-    public function basePath($path = '')
-    {
-        return $this->basePath.($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
-     * Set the base path for the application.
-     *
-     * @param  string  $basePath
-     * @return $this
-     */
-    public function setBasePath($basePath)
-    {
-        $this->basePath = rtrim($basePath, '\/');
-        $this->bindPathsInContainer();
-
-        return $this;
-    }
-
-    /**
      * Bind all of the application paths in the container.
      */
     protected function bindPathsInContainer()
@@ -427,8 +274,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
         $this->instance('path.root', $this->rootPath());
         // Config
         $this->instance('path.config', $this->configPath());
-        // Public root
-        $this->instance('path.public', $this->publicPath());
+        // Public
+        $this->instance('path.public', $this->webPath());
         // Storage
         $this->instance('path.storage', $this->storagePath());
         // Database
@@ -440,324 +287,165 @@ class Application extends Container implements ApplicationContract, CachesConfig
     }
 
     /**
-     * Get the path to the application "themosis-application" directory.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    public function path($path = '')
-    {
-        return $this->basePath.DIRECTORY_SEPARATOR.'app'.($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
      * Get the WordPress "content" directory.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function contentPath($path = '')
     {
-        return WP_CONTENT_DIR.($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
-     * Get the WordPress "plugins" directory.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    public function pluginsPath($path = '')
-    {
-        return $this->contentPath('plugins').($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return WP_CONTENT_DIR . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the WordPress "mu-plugins" directory.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function mupluginsPath($path = '')
     {
-        return $this->contentPath('mu-plugins').($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return $this->contentPath('mu-plugins') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+    }
+
+    /**
+     * Get the WordPress "plugins" directory.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function pluginsPath($path = '')
+    {
+        return $this->contentPath('plugins') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the WordPress "themes" directory.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function themesPath($path = '')
     {
-        return $this->contentPath('themes').($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return $this->contentPath('themes') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the application directory.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function applicationPath($path = '')
     {
-        return $this->basePath('app').($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
-     * Get the resources directory path.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    public function resourcePath($path = '')
-    {
-        return $this->basePath('resources').($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
-     * Get the path to the views directory.
-     *
-     * This method returns the first configured path in the array of view paths.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    public function viewPath($path = '')
-    {
-        $viewPath = rtrim($this['config']->get('view.paths')[0], DIRECTORY_SEPARATOR);
-
-        return $this->joinPaths($viewPath, $path);
-    }
-
-    /**
-     * Join the given paths together.
-     *
-     * @param  string  $basePath
-     * @param  string  $path
-     * @return string
-     */
-    public function joinPaths($basePath, $path = '')
-    {
-        return join_paths($basePath, $path);
+        return $this->basePath('app') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the path to the resources "languages" directory.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function langPath($path = '')
     {
-        return $this->resourcePath('languages').($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return $this->resourcePath('languages') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the path of the web server root.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function webPath($path = '')
     {
-        return $this->basePath(THEMOSIS_PUBLIC_DIR).($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return $this->basePath(THEMOSIS_PUBLIC_DIR) . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the root path of the project.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function rootPath($path = '')
     {
         if (defined('THEMOSIS_ROOT')) {
-            return THEMOSIS_ROOT.($path ? DIRECTORY_SEPARATOR.$path : $path);
+            return THEMOSIS_ROOT . ($path ? DIRECTORY_SEPARATOR . $path : $path);
         }
 
         return $this->webPath($path);
     }
 
     /**
-     * Get the main application plugin configuration directory.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    public function configPath($path = '')
-    {
-        return $this->basePath('config').($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
      * Get the storage directory path.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function storagePath($path = '')
     {
         if (defined('THEMOSIS_ROOT')) {
-            return $this->rootPath('storage').($path ? DIRECTORY_SEPARATOR.$path : $path);
+            return $this->rootPath('storage') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
         }
 
-        return $this->contentPath('storage').($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
-     * Set the storage directory.
-     *
-     * @param  string  $path
-     * @return $this
-     */
-    public function useStoragePath($path)
-    {
-        $this->storagePath = $path;
-
-        $this->instance('path.storage', $path);
-
-        return $this;
+        return $this->contentPath('storage') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the database directory path.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function databasePath($path = '')
     {
-        return $this->rootPath('database').($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return $this->rootPath('database') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the bootstrap directory path.
      *
-     * @param  string  $path
+     * @param string $path
+     *
      * @return string
      */
     public function bootstrapPath($path = '')
     {
-        return $this->rootPath('bootstrap').($path ? DIRECTORY_SEPARATOR.$path : $path);
+        return $this->rootPath('bootstrap') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Get the WordPress directory path.
      *
-     * @param  string  $path
-     * @return string
+     * @param string $path
      *
      * @throws \Illuminate\Container\EntryNotFoundException
+     *
+     * @return string
      */
     public function wordpressPath($path = '')
     {
-        return $this->webPath(env('WP_DIR', 'cms')).($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
-     * Set the environment file to be loaded during bootstrapping.
-     *
-     * @param  string  $file
-     * @return $this
-     */
-    public function loadEnvironmentFrom($file)
-    {
-        $this->environmentFile = $file;
-
-        return $this;
-    }
-
-    /**
-     * Return the environment path directory.
-     *
-     * @return string
-     */
-    public function environmentPath()
-    {
-        return $this->environmentPath ?: $this->basePath();
-    }
-
-    /**
-     * Set the directory for the environment file.
-     *
-     * @param  string  $path
-     * @return $this
-     */
-    public function useEnvironmentPath($path)
-    {
-        $this->environmentPath = $path;
-
-        return $this;
-    }
-
-    /**
-     * Return the environment file name base.
-     *
-     * @return string
-     */
-    public function environmentFile()
-    {
-        return $this->environmentFile ?: '.env';
-    }
-
-    /**
-     * Return the environment file path.
-     *
-     * @return string
-     */
-    public function environmentFilePath()
-    {
-        return $this->environmentPath().DIRECTORY_SEPARATOR.$this->environmentFile();
-    }
-
-    /**
-     * Get or check the current application environment.
-     *
-     * @param  string|array  $environments
-     * @return string|bool
-     */
-    public function environment(...$environments)
-    {
-        if (count($environments) > 0) {
-            $patterns = is_array($environments[0]) ? $environments[0] : $environments;
-
-            return Str::is($patterns, $this['env']);
-        }
-
-        return $this['env'];
-    }
-
-    /**
-     * Detech application's current environment.
-     *
-     *
-     * @return string
-     */
-    public function detectEnvironment(Closure $callback)
-    {
-        $args = $_SERVER['argv'] ?? null;
-
-        return $this['env'] = (new EnvironmentDetector())->detect($callback, $args);
-    }
-
-    /**
-     * Determine if we are running in the console.
-     *
-     * @return bool
-     */
-    public function runningInConsole()
-    {
-        return php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg';
+        return $this->webPath(env('WP_DIR', 'cms')) . ($path ? DIRECTORY_SEPARATOR . $path : $path);
     }
 
     /**
      * Determine if the application is currently down for maintenance.
      *
-     * @return bool
-     *
      * @throws \Illuminate\Container\EntryNotFoundException
+     *
+     * @return bool
      */
     public function isDownForMaintenance()
     {
@@ -771,467 +459,10 @@ class Application extends Container implements ApplicationContract, CachesConfig
     }
 
     /**
-     * Register all of the configured providers.
-     */
-    public function registerConfiguredProviders()
-    {
-        $providers = Collection::make($this->config['app.providers'])
-            ->partition(function ($provider) {
-                return Str::startsWith($provider, 'Illuminate\\');
-            });
-
-        $providers->splice(1, 0, [$this->make(PackageManifest::class)->providers()]);
-
-        (new ProviderRepository($this, new Filesystem(), $this->getCachedServicesPath()))
-            ->load($providers->collapse()->toArray());
-    }
-
-    /**
-     * Register a deferred provider and service.
-     *
-     * @param  string  $provider
-     * @param  string|null  $service
-     */
-    public function registerDeferredProvider($provider, $service = null)
-    {
-        if ($service) {
-            unset($this->deferredServices[$service]);
-        }
-
-        $this->register($instance = new $provider($this));
-
-        if (! $this->booted) {
-            $this->booting(function () use ($instance) {
-                $this->bootProvider($instance);
-            });
-        }
-    }
-
-    /**
-     * Add an array of services to the application's deferred services.
-     */
-    public function addDeferredServices(array $services)
-    {
-        $this->deferredServices = array_merge($this->deferredServices, $services);
-    }
-
-    /**
-     * Get the application's deferred services.
-     *
-     * @return array
-     */
-    public function getDeferredServices()
-    {
-        return $this->deferredServices;
-    }
-
-    /**
-     * Set the application's deferred services.
-     */
-    public function setDeferredServices(array $services)
-    {
-        $this->deferredServices = $services;
-    }
-
-    /**
-     * Verify if the application has been bootstrapped before.
-     *
-     * @return bool
-     */
-    public function hasBeenBootstrapped()
-    {
-        return $this->hasBeenBootstrapped;
-    }
-
-    /**
-     * Bootstrap the application with given list of bootstrap
-     * classes.
-     */
-    public function bootstrapWith(array $bootstrappers)
-    {
-        $this->hasBeenBootstrapped = true;
-
-        foreach ($bootstrappers as $bootstrapper) {
-            $this['events']->dispatch('bootstrapping: '.$bootstrapper, [$this]);
-
-            /*
-             * Instantiate each bootstrap class and call its "bootstrap" method
-             * with the Application as a parameter.
-             */
-            $this->make($bootstrapper)->bootstrap($this);
-
-            $this['events']->dispatch('bootstrapped: '.$bootstrapper, [$this]);
-        }
-    }
-
-    /**
-     * Boot the application's service providers.
-     */
-    public function boot()
-    {
-        if ($this->booted) {
-            return;
-        }
-
-        /*
-         * Once the application has booted we will also fire some "booted" callbacks
-         * for any listeners that need to do work after this initial booting gets
-         * finished. This is useful when ordering the boot-up processes we run.
-         */
-        $this->fireAppCallbacks($this->bootingCallbacks);
-
-        array_walk($this->serviceProviders, function ($provider) {
-            $this->bootProvider($provider);
-        });
-
-        $this->booted = true;
-
-        $this->fireAppCallbacks($this->bootedCallbacks);
-    }
-
-    /**
-     * Call the booting callbacks for the application.
-     */
-    protected function fireAppCallbacks(array $callbacks)
-    {
-        foreach ($callbacks as $callback) {
-            call_user_func($callback, $this);
-        }
-    }
-
-    /**
-     * Boot the given service provider.
-     */
-    protected function bootProvider(ServiceProvider $provider)
-    {
-        $provider->callBootingCallbacks();
-
-        if (method_exists($provider, 'boot')) {
-            $this->call([$provider, 'boot']);
-        }
-
-        $provider->callBootedCallbacks();
-    }
-
-    /**
-     * Register a new boot listener.
-     *
-     * @param  mixed  $callback
-     */
-    public function booting($callback)
-    {
-        $this->bootingCallbacks[] = $callback;
-    }
-
-    /**
-     * Register a new "booted" listener.
-     *
-     * @param  mixed  $callback
-     */
-    public function booted($callback)
-    {
-        $this->bootedCallbacks[] = $callback;
-
-        if ($this->isBooted()) {
-            $this->fireAppCallbacks([$callback]);
-        }
-    }
-
-    /**
-     * Get the path to the cached services.php file.
-     *
-     * @return string
-     */
-    public function getCachedServicesPath()
-    {
-        return $this->normalizeCachePath('APP_SERVICES_CACHE', 'cache/services.php');
-    }
-
-    /**
-     * Get the path to the cached packages.php file.
-     *
-     * @return string
-     */
-    public function getCachedPackagesPath()
-    {
-        return $this->normalizeCachePath('APP_PACKAGES_CACHE', 'cache/packages.php');
-    }
-
-    /**
-     * Determine if the application configuration is cached.
-     *
-     * @return bool
-     */
-    public function configurationIsCached()
-    {
-        return file_exists($this->getCachedConfigPath());
-    }
-
-    /**
-     * Get the path to the configuration cache file.
-     *
-     * @return string
-     */
-    public function getCachedConfigPath()
-    {
-        return $this->normalizeCachePath('APP_CONFIG_CACHE', 'cache/config.php');
-    }
-
-    /**
-     * Handles a Request to convert it to a Response.
-     *
-     * When $catch is true, the implementation must catch all exceptions
-     * and do its best to convert them to a Response instance.
-     *
-     * @param  SymfonyRequest  $request A Request instance
-     * @param  int  $type    The type of the request
-     *                                (one of HttpKernelInterface::MASTER_REQUEST or HttpKernelInterface::SUB_REQUEST)
-     * @param  bool  $catch   Whether to catch exceptions or not
-     * @return Response A Response instance
-     *
-     * @throws \Exception When an Exception occurs during processing
-     */
-    public function handle(SymfonyRequest $request, int $type = self::MAIN_REQUEST, bool $catch = true): Response
-    {
-        return $this[HttpKernelContract::class]->handle(Request::createFromBase($request));
-    }
-
-    /**
-     * Register a service provider with the application.
-     *
-     * @param  \Illuminate\Support\ServiceProvider|string  $provider
-     * @param  array  $options
-     * @param  bool  $force
-     * @return \Illuminate\Support\ServiceProvider
-     */
-    public function register($provider, $options = [], $force = false)
-    {
-        if (($registered = $this->getProvider($provider)) && ! $force) {
-            return $registered;
-        }
-
-        // If the given "provider" is a string, we will resolve it, passing in the
-        // application instance automatically for the developer. This is simply
-        // a more convenient way of specifying your service provider classes.
-        if (is_string($provider)) {
-            $provider = $this->resolveProvider($provider);
-        }
-
-        if (method_exists($provider, 'register')) {
-            $provider->register();
-        }
-
-        // If there are bindings / singletons set as properties on the provider we
-        // will spin through them and register them with the application, which
-        // serves as a convenience layer while registering a lot of bindings.
-        if (property_exists($provider, 'bindings')) {
-            foreach ($provider->bindings as $key => $value) {
-                $this->bind($key, $value);
-            }
-        }
-
-        if (property_exists($provider, 'singletons')) {
-            foreach ($provider->singletons as $key => $value) {
-                $this->singleton($key, $value);
-            }
-        }
-
-        $this->markAsRegistered($provider);
-
-        // If the application has already booted, we will call this boot method on
-        // the provider class so it has an opportunity to do its boot logic and
-        // will be ready for any usage by this developer's application logic.
-        if ($this->booted) {
-            $this->bootProvider($provider);
-        }
-
-        return $provider;
-    }
-
-    /**
-     * Get the registered service provider instance if it exists.
-     *
-     * @param  ServiceProvider|string  $provider
-     * @return ServiceProvider|null
-     */
-    public function getProvider($provider)
-    {
-        return array_values($this->getProviders($provider))[0] ?? null;
-    }
-
-    /**
-     * Get the registered service provider instances if any exist.
-     *
-     * @param  ServiceProvider|string  $provider
-     * @return array
-     */
-    public function getProviders($provider)
-    {
-        $name = is_string($provider) ? $provider : get_class($provider);
-
-        return Arr::where($this->serviceProviders, function ($value) use ($name) {
-            return $value instanceof $name;
-        });
-    }
-
-    /**
-     * Get the service providers that have been loaded.
-     *
-     * @return array
-     */
-    public function getLoadedProviders()
-    {
-        return $this->loadedProviders;
-    }
-
-    /**
-     * Determine if the given service provider is loaded.
-     *
-     *
-     * @return bool
-     */
-    public function providerIsLoaded(string $provider)
-    {
-        return isset($this->loadedProviders[$provider]);
-    }
-
-    /**
-     * Resolve a service provider instance from the class name.
-     *
-     * @param  string  $provider
-     * @return ServiceProvider
-     */
-    public function resolveProvider($provider)
-    {
-        return new $provider($this);
-    }
-
-    /**
-     * Mark the given provider as registered.
-     *
-     * @param  ServiceProvider  $provider
-     */
-    protected function markAsRegistered($provider)
-    {
-        $this->serviceProviders[] = $provider;
-        $this->loadedProviders[get_class($provider)] = true;
-    }
-
-    /**
-     * Determine if the application is running unit tests.
-     *
-     * @return bool
-     */
-    public function runningUnitTests()
-    {
-        return $this['env'] == 'testing';
-    }
-
-    /**
-     * Get an instance of the maintenance mode manager implementation.
-     *
-     * @return \Illuminate\Contracts\Foundation\MaintenanceMode
-     */
-    public function maintenanceMode()
-    {
-        // @TODO to implement
-        return false;
-    }
-
-    /**
-     * Resolve the given type from the container.
-     *
-     * (Overriding Container::make)
-     *
-     * @param  string  $abstract
-     * @return mixed
-     *
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     */
-    public function make($abstract, array $parameters = [])
-    {
-        $abstract = $this->getAlias($abstract);
-
-        if (isset($this->deferredServices[$abstract]) && ! isset($this->instances[$abstract])) {
-            $this->loadDeferredProvider($abstract);
-        }
-
-        return parent::make($abstract, $parameters);
-    }
-
-    /**
-     * Load and boot all of the remaining deferred providers.
-     */
-    public function loadDeferredProviders()
-    {
-        // We will simply spin through each of the deferred providers and register each
-        // one and boot them if the application has booted. This should make each of
-        // the remaining services available to this application for immediate use.
-        foreach ($this->deferredServices as $service => $provider) {
-            $this->loadDeferredProvider($service);
-        }
-
-        $this->deferredServices = [];
-    }
-
-    /**
-     * Load the provider for a deferred service.
-     *
-     * @param  string  $service
-     */
-    public function loadDeferredProvider($service)
-    {
-        if (! isset($this->deferredServices[$service])) {
-            return;
-        }
-
-        $provider = $this->deferredServices[$service];
-
-        // If the service provider has not already been loaded and registered we can
-        // register it with the application and remove the service from this list
-        // of deferred services, since it will already be loaded on subsequent.
-        if (! isset($this->loadedProviders[$provider])) {
-            $this->registerDeferredProvider($provider, $service);
-        }
-    }
-
-    /**
-     * Determine if the given abstract type has been bound.
-     *
-     * (Overriding Container::bound)
-     *
-     * @param  string  $abstract
-     * @return bool
-     */
-    public function bound($abstract)
-    {
-        return isset($this->deferredServices[$abstract]) || parent::bound($abstract);
-    }
-
-    /**
-     * Determine if the application has booted.
-     *
-     * @return bool
-     */
-    public function isBooted()
-    {
-        return $this->booted;
-    }
-
-    /**
-     * Determine if middleware has been disabled for the application.
-     *
-     * @return bool
-     */
-    public function shouldSkipMiddleware()
-    {
-        return $this->bound('middleware.disable') &&
-            $this->make('middleware.disable') === true;
-    }
-
-    /**
      * Bootstrap a Themosis like plugin.
      *
+     * @param string $filePath
+     * @param string $configPath
      *
      * @return PluginManager
      */
@@ -1239,7 +470,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
     {
         $plugin = (new PluginManager($this, $filePath, new ClassLoader()))->load($configPath);
 
-        $this->instance('wp.plugin.'.$plugin->getHeader('plugin_id'), $plugin);
+        $this->instance('wp.plugin.' . $plugin->getHeader('plugin_id'), $plugin);
 
         return $plugin;
     }
@@ -1248,6 +479,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
      * Register the framework core "plugin" and auto-load
      * any found mu-plugins after the framework.
      *
+     * @param string $pluginsPath
      *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      * @throws \Exception
@@ -1255,9 +487,9 @@ class Application extends Container implements ApplicationContract, CachesConfig
     public function loadPlugins(string $pluginsPath)
     {
         $directories = Collection::make((new Filesystem())->directories($this->mupluginsPath()))
-            ->map(function ($directory) {
-                return ltrim(substr($directory, strrpos($directory, DS)), '\/');
-            })->toArray();
+                                 ->map(function ($directory) {
+                                     return ltrim(substr($directory, strrpos($directory, DS)), '\/');
+                                 })->toArray();
 
         (new PluginsRepository($this, new Filesystem(), $pluginsPath, $this->getCachedPluginsPath()))
             ->load($directories);
@@ -1266,7 +498,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
     /**
      * Register a plugin and load it.
      *
-     * @param  string  $path Plugin relative path (pluginDirName/pluginMainFile).
+     * @param string $path Plugin relative path (pluginDirName/pluginMainFile).
      */
     public function registerPlugin(string $path)
     {
@@ -1285,6 +517,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
     /**
      * Register a list of hookable instances.
+     *
+     * @param string $config
      */
     public function registerConfiguredHooks(string $config = '')
     {
@@ -1299,12 +533,13 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
     /**
      * Create and register a hook instance.
+     *
+     * @param string $hook
      */
     public function registerHook(string $hook)
     {
         // Build a "Hookable" instance.
         // Hookable instances must extend the "Hookable" class.
-        /** @var Hookable $instance */
         $instance = new $hook($this);
         $hooks = (array) $instance->hook;
 
@@ -1322,14 +557,15 @@ class Application extends Container implements ApplicationContract, CachesConfig
     /**
      * Load current active theme.
      *
-     * @param  string  $dirPath    The theme directory path.
-     * @param  string  $configPath The theme relative configuration folder path.
+     * @param string $dirPath    The theme directory path.
+     * @param string $configPath The theme relative configuration folder path.
+     *
      * @return ThemeManager
      */
     public function loadTheme(string $dirPath, string $configPath)
     {
         $theme = (new ThemeManager($this, $dirPath, new ClassLoader()))
-            ->load($dirPath.'/'.trim($configPath, '\/'));
+            ->load($dirPath . '/' . trim($configPath, '\/'));
 
         $this->instance('wp.theme', $theme);
 
@@ -1339,7 +575,9 @@ class Application extends Container implements ApplicationContract, CachesConfig
     /**
      * Load configuration files based on given path.
      *
-     * @param  string  $path   The configuration files folder path.
+     * @param Repository $config
+     * @param string     $path   The configuration files folder path.
+     *
      * @return Application
      */
     public function loadConfigurationFiles(Repository $config, $path = '')
@@ -1356,7 +594,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
     /**
      * Get all configuration files.
      *
-     * @param  mixed  $path
+     * @param mixed $path
+     *
      * @return array
      */
     protected function getConfigurationFiles($path)
@@ -1365,7 +604,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
         foreach (Finder::create()->files()->name('*.php')->in($path) as $file) {
             $directory = $this->getNestedDirectory($file, $path);
-            $files[$directory.basename($file->getRealPath(), '.php')] = $file->getRealPath();
+            $files[$directory . basename($file->getRealPath(), '.php')] = $file->getRealPath();
         }
 
         ksort($files, SORT_NATURAL);
@@ -1376,7 +615,9 @@ class Application extends Container implements ApplicationContract, CachesConfig
     /**
      * Get configuration file nesting path.
      *
-     * @param  string  $path
+     * @param SplFileInfo $file
+     * @param string      $path
+     *
      * @return string
      */
     protected function getNestedDirectory(SplFileInfo $file, $path)
@@ -1384,46 +625,10 @@ class Application extends Container implements ApplicationContract, CachesConfig
         $directory = $file->getPath();
 
         if ($nested = trim(str_replace($path, '', $directory), DIRECTORY_SEPARATOR)) {
-            $nested = str_replace(DIRECTORY_SEPARATOR, '.', $nested).'.';
+            $nested = str_replace(DIRECTORY_SEPARATOR, '.', $nested) . '.';
         }
 
         return $nested;
-    }
-
-    /**
-     * Throw an HttpException with the given data.
-     *
-     * @param  int  $code
-     * @param  string  $message
-     */
-    public function abort($code, $message = '', array $headers = [])
-    {
-        if (404 == $code) {
-            throw new NotFoundHttpException($message);
-        }
-
-        throw new HttpException($code, $message, null, $headers);
-    }
-
-    /**
-     * Register a terminating callback with the application.
-     *
-     *
-     * @return $this
-     */
-    public function terminating($callback): void
-    {
-        $this->events->listen(Events\Terminates::class, $callback);
-    }
-
-    /**
-     * Terminate the application.
-     */
-    public function terminate()
-    {
-        foreach ($this->terminatingCallbacks as $terminating) {
-            $this->call($terminating);
-        }
     }
 
     /**
@@ -1431,8 +636,9 @@ class Application extends Container implements ApplicationContract, CachesConfig
      * Abstract the implementation from the user for easy
      * theme integration.
      *
-     * @param  string  $kernel  Application kernel class name.
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
+     * @param string                                    $kernel  Application kernel class name.
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
      * @return $this
      */
     public function manage(string $kernel, $request)
@@ -1464,7 +670,9 @@ class Application extends Container implements ApplicationContract, CachesConfig
      * Handle WordPress administration incoming request.
      * Only send response headers.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
+     * @param string                                    $kernel
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
      * @return $this;
      */
     public function manageAdmin(string $kernel, $request)
@@ -1482,6 +690,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
      * Manage WordPress Admin Init.
      * Handle incoming request and return a response.
      *
+     * @param string $kernel
+     * @param $request
      *
      * @return Closure
      */
@@ -1505,189 +715,11 @@ class Application extends Container implements ApplicationContract, CachesConfig
     }
 
     /**
-     * Register a callback to run after loading the environment.
-     */
-    public function afterLoadingEnvironment(Closure $callback)
-    {
-        $this->afterBootstrapping(EnvironmentLoader::class, $callback);
-    }
-
-    /**
-     * Register a callback to run before a bootstrapper.
-     *
-     * @param  string  $bootstrapper
-     */
-    public function beforeBootstrapping($bootstrapper, Closure $callback)
-    {
-        $this['events']->listen('bootstrapping: '.$bootstrapper, $callback);
-    }
-
-    /**
-     * Register a callback to run after a bootstrapper.
-     *
-     * @param  string  $bootstrapper
-     */
-    public function afterBootstrapping($bootstrapper, Closure $callback)
-    {
-        $this['events']->listen('bootstrapped: '.$bootstrapper, $callback);
-    }
-
-    /**
-     * Set the application locale.
-     *
-     * @param  string  $locale
-     */
-    public function setLocale($locale)
-    {
-        $this['config']->set('app.locale', $locale);
-        $this['translator']->setLocale($locale);
-        $this['events']->dispatch(new LocaleUpdated($locale));
-    }
-
-    /**
-     * Get the application locale.
-     *
-     * @return string
-     */
-    public function getLocale()
-    {
-        return $this['config']->get('app.locale');
-    }
-
-    /**
-     * Check if passed locale is current locale.
-     *
-     * @param  string  $locale
-     * @return bool
-     */
-    public function isLocale($locale)
-    {
-        return $this->getLocale() == $locale;
-    }
-
-    /**
-     * Get the current application locale.
-     *
-     * @return string
-     */
-    public function currentLocale()
-    {
-        return $this->getLocale();
-    }
-
-    /**
-     * Get the current application fallback locale.
-     *
-     * @return string
-     */
-    public function getFallbackLocale()
-    {
-        return $this['config']->get('app.fallback_locale');
-    }
-
-    /**
-     * Set the current application fallback locale.
-     *
-     * @param  string  $fallbackLocale
-     * @return void
-     */
-    public function setFallbackLocale($fallbackLocale)
-    {
-        $this['config']->set('app.fallback_locale', $fallbackLocale);
-
-        $this['translator']->setFallback($fallbackLocale);
-    }
-
-    /**
-     * Return the application namespace.
-     *
-     * @return string
-     *
-     * @throws \RuntimeException
-     */
-    public function getNamespace()
-    {
-        if (! is_null($this->namespace)) {
-            return $this->namespace;
-        }
-
-        $composer = json_decode(file_get_contents(base_path('composer.json')), true);
-
-        foreach ((array) data_get($composer, 'autoload.psr-4') as $namespace => $path) {
-            foreach ((array) $path as $pathChoice) {
-                if (realpath(app_path()) == realpath(base_path($pathChoice))) {
-                    return $this->namespace = $namespace;
-                }
-            }
-        }
-
-        throw new \RuntimeException('Unable to detect application namespace.');
-    }
-
-    /**
-     * Determine if the application routes are cached.
-     *
-     * @return bool
-     */
-    public function routesAreCached()
-    {
-        return $this['files']->exists($this->getCachedRoutesPath());
-    }
-
-    /**
-     * Get the path to the routes cache file.
-     *
-     * @return string
-     */
-    public function getCachedRoutesPath()
-    {
-        return $this->normalizeCachePath('APP_ROUTES_CACHE', 'cache/routes.php');
-    }
-
-    /**
-     * Check if the application events are cached.
-     *
-     * @return bool
-     */
-    public function eventsAreCached()
-    {
-        return $this['files']->exists($this->getCachedEventsPath());
-    }
-
-    /**
-     * Get the path to the events cache file.
-     *
-     * @return string
-     */
-    public function getCachedEventsPath()
-    {
-        return $this->normalizeCachePath('APP_EVENTS_CACHE', 'cache/events.php');
-    }
-
-    /**
-     * Normalize a relative or absolute path to a cache file.
-     *
-     * @param  string  $key
-     * @param  string  $default
-     * @return string
-     */
-    protected function normalizeCachePath($key, $default)
-    {
-        if (is_null($env = Env::get($key))) {
-            return $this->bootstrapPath($default);
-        }
-
-        return Str::startsWith($env, '/')
-            ? $env
-            : $this->basePath($env);
-    }
-
-    /**
      * Determine if we currently inside the WordPress administration.
      *
      * @return bool
      */
-    public function isWordPressAdmin()
+    public function isWordPressAdmin(): bool
     {
         if (isset($GLOBALS['current_screen']) && is_a($GLOBALS['current_screen'], 'WP_Screen')) {
             return $GLOBALS['current_screen']->in_admin();
@@ -1700,11 +732,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
     /**
      * Return a Javascript Global variable.
-     *
-     *
-     * @return string
      */
-    public function outputJavascriptGlobal(string $name, array $data)
+    public function outputJavascriptGlobal(string $name, array $data): string
     {
         $output = "<script type=\"text/javascript\">\n\r";
         $output .= "/* <![CDATA[ */\n\r";
@@ -1712,7 +741,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
         if (! empty($data) && is_array($data)) {
             foreach ($data as $key => $value) {
-                $output .= $key.': '.json_encode($value).",\n\r";
+                $output .= $key . ': ' . json_encode($value) . ",\n\r";
             }
         }
 
@@ -1721,25 +750,5 @@ class Application extends Container implements ApplicationContract, CachesConfig
         $output .= '</script>';
 
         return $output;
-    }
-
-    /**
-     * Get the public path.
-     *
-     * @return string
-     */
-    public function publicPath($path = '')
-    {
-        return $this->webPath($path);
-    }
-
-    /**
-     * Determine if debug mode is enabled.
-     *
-     * @return bool
-     */
-    public function hasDebugModeEnabled(): bool
-    {
-        return (bool) ($this['config']['app.debug'] ?? false);
     }
 }

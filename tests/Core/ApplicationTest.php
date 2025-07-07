@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Themosis\Core\Application;
-use Themosis\Core\PackageManifest;
+use Illuminate\Foundation\PackageManifest;
 use Themosis\Route\RouteServiceProvider;
 
 class ApplicationTest extends TestCase
@@ -133,7 +133,7 @@ class ApplicationTest extends TestCase
         );
         $this->assertInstanceOf(
             PackageManifest::class,
-            $app['Themosis\Core\PackageManifest'],
+            $app['Illuminate\Foundation\PackageManifest'],
             'Package manifest is not bound',
         );
     }
@@ -323,7 +323,7 @@ class ApplicationTest extends TestCase
         $app->afterLoadingEnvironment($closure);
         $this->assertArrayHasKey(
             0,
-            $app['events']->getListeners('bootstrapped: Themosis\Core\Bootstrap\EnvironmentLoader'),
+            $app['events']->getListeners('bootstrapped: Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables'),
         );
     }
 
@@ -332,10 +332,10 @@ class ApplicationTest extends TestCase
         $app = new Application();
         $closure = function () {
         };
-        $app->beforeBootstrapping('Themosis\Core\Bootstrap\RegisterFacades', $closure);
+        $app->beforeBootstrapping('Illuminate\Foundation\Bootstrap\RegisterFacades', $closure);
         $this->assertArrayHasKey(
             0,
-            $app['events']->getListeners('bootstrapping: Themosis\Core\Bootstrap\RegisterFacades'),
+            $app['events']->getListeners('bootstrapping: Illuminate\Foundation\Bootstrap\RegisterFacades'),
         );
     }
 
@@ -344,10 +344,10 @@ class ApplicationTest extends TestCase
         $app = new Application();
         $closure = function () {
         };
-        $app->afterBootstrapping('Themosis\Core\Bootstrap\RegisterFacades', $closure);
+        $app->afterBootstrapping('Illuminate\Foundation\Bootstrap\RegisterFacades', $closure);
         $this->assertArrayHasKey(
             0,
-            $app['events']->getListeners('bootstrapped: Themosis\Core\Bootstrap\RegisterFacades'),
+            $app['events']->getListeners('bootstrapped: Illuminate\Foundation\Bootstrap\RegisterFacades'),
         );
     }
 
