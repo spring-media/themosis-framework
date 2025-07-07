@@ -40,8 +40,8 @@ class PageTest extends TestCase
     protected function getApplication()
     {
         $application = $this->getMockBuilder(\Themosis\Core\Application::class)
-            ->disableOriginalConstructor()
             ->onlyMethods(['getLocale'])
+            ->disableOriginalConstructor()
             ->getMock();
 
         $application->method('getLocale')->willReturn('en_US');

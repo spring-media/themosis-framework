@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Themosis\Core\Exceptions\Handler;
+use Illuminate\Foundation\Exceptions\Handler;
 use Themosis\Tests\Mocks\RequestMock;
 
 class ExceptionHandlerTest extends TestCase
@@ -45,22 +45,18 @@ class ExceptionHandlerTest extends TestCase
         $this->container = Container::setInstance(new Container());
 
         $this->request = $this->getMockBuilder(RequestMock::class)
-            ->onlyMethods(['expectsJson'])
-            ->getMock();
+                              ->onlyMethods(['expectsJson'])
+                              ->getMock();
 
-        $this->config = $config = $this->getMockBuilder(Repository::class)
-            ->onlyMethods(['get'])
-            ->getMock();
-        $this->container->singleton('config', function () use ($config) {
-            return $config;
+        $this->config = $this->getMockBuilder(Repository::class)
+                                       ->onlyMethods(['get'])
+                                       ->getMock();
+        $this->container->singleton('config', function () {
+            return $this->config;
         });
 
-        $viewFactory = $this->getMockBuilder(Factory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $redirector = $this->getMockBuilder(Redirector::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $viewFactory = $this->createMock(Factory::class);
+        $redirector = $this->createMock(Redirector::class);
 
         $this->container->singleton(
             'Illuminate\Contracts\Routing\ResponseFactory',
@@ -99,8 +95,7 @@ class ExceptionHandlerTest extends TestCase
         $this->config->expects($this->once())
             ->method('get')
             ->with('app.debug', $this->equalTo(null))
-            ->will($this->returnValue(true));
-        $this->request->expects($this->once())->method('expectsJson')->will($this->returnValue(true));
+            ->willReturn(true);
 
         $response = $this->handler->render(
             $this->request,
@@ -126,8 +121,7 @@ class ExceptionHandlerTest extends TestCase
         $this->config->expects($this->once())
             ->method('get')
             ->with('app.debug', $this->equalTo(null))
-            ->will($this->returnValue(false));
-        $this->request->expects($this->once())->method('expectsJson')->will($this->returnValue(true));
+            ->willReturn(false);
 
         $response = $this->handler->render(
             $this->request,
@@ -148,8 +142,7 @@ class ExceptionHandlerTest extends TestCase
         $this->config->expects($this->once())
             ->method('get')
             ->with('app.debug', $this->equalTo(null))
-            ->will($this->returnValue(false));
-        $this->request->expects($this->once())->method('expectsJson')->will($this->returnValue(true));
+            ->willReturn(false);
 
         $response = $this->handler->render(
             $this->request,
@@ -172,8 +165,7 @@ class ExceptionHandlerTest extends TestCase
         $this->config->expects($this->once())
             ->method('get')
             ->with('app.debug', $this->equalTo(null))
-            ->will($this->returnValue(false));
-        $this->request->expects($this->once())->method('expectsJson')->will($this->returnValue(true));
+            ->willReturn(false);
 
         $response = $this->handler->render(
             $this->request,
@@ -219,7 +211,7 @@ class ExceptionHandlerTest extends TestCase
         $file = $this->createMock(UploadedFile::class);
         $file->method('getPathname')->willReturn('photo.jpg');
         $file->method('getClientOriginalName')->willReturn('photo.jpg');
-        $file->method('getClientMimeType')->willReturn('');
+        $file->method('getClientMimeType')->willReturn('image/jpeg');
         $file->method('getError')->willReturn(0);
 
         $request = Request::create('/', 'POST', $argumentExpected, [], ['photo' => $file]);

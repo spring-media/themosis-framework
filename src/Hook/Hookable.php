@@ -21,6 +21,11 @@ class Hookable
      */
     public $priority = 10;
 
+    /**
+     * @var int
+     */
+    public $acceptedArgs = 3;
+
     public function __construct(Application $app)
     {
         $this->app = $app;

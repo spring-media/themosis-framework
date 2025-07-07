@@ -4,7 +4,7 @@ namespace Themosis\Tests\Core;
 
 use PHPUnit\Framework\TestCase;
 use Themosis\Core\Application;
-use Themosis\Core\ProviderRepository;
+use Illuminate\Foundation\ProviderRepository;
 use Themosis\Tests\Mocks\ProviderMock;
 
 class ProviderRepositoryTest extends TestCase
@@ -14,7 +14,7 @@ class ProviderRepositoryTest extends TestCase
         $app = $this->getMockBuilder('Themosis\Core\Application')
             ->onlyMethods(['register', 'addDeferredServices', 'runningInConsole'])
             ->getMock();
-        $repository = $this->getMockBuilder('Themosis\Core\ProviderRepository')
+        $repository = $this->getMockBuilder('Illuminate\Foundation\ProviderRepository')
             ->setConstructorArgs([
                 $app,
                 $this->getMockBuilder('Illuminate\Filesystem\Filesystem')->getMock(),
@@ -50,7 +50,10 @@ class ProviderRepositoryTest extends TestCase
         $app = $this->getMockBuilder('Themosis\Core\Application')
             ->onlyMethods(['register', 'addDeferredServices', 'runningInConsole'])
             ->getMock();
-        $repository = $this->getMockBuilder('Themosis\Core\ProviderRepository')
+        $app->method('register');
+        $app->method('runningInConsole')->willReturn(false);
+
+        $repository = $this->getMockBuilder('Illuminate\Foundation\ProviderRepository')
             ->setConstructorArgs([
                 $app,
                 $this->getMockBuilder('Illuminate\Filesystem\Filesystem')->getMock(),
@@ -63,38 +66,17 @@ class ProviderRepositoryTest extends TestCase
             ])
             ->getMock();
 
-        $repository->expects($this->once())
-            ->method('loadManifest')
-            ->willReturn([
-                'eager' => [],
-                'deferred' => ['deferred'],
-            ]);
-        $repository->expects($this->once())->method('shouldRecompile')->willReturn(true);
+        $repository->method('loadManifest')->willReturn([
+            'eager' => [],
+            'deferred' => ['foo'],
+        ]);
+        $repository->method('shouldRecompile')->willReturn(true);
 
-        // foo mock is just a deferred provider
-        $repository->expects($this->once())
-            ->method('createProvider')
+        $fooMock = new ProviderMock($app);
+        $repository->method('createProvider')
             ->with('foo')
-            ->willReturn($fooMock = $this->getMockBuilder(ProviderMock::class)
-                ->onlyMethods(['isDeferred', 'provides', 'when'])
-                ->getMock(), );
+            ->willReturn($fooMock);
 
-        $fooMock->expects($this->once())->method('isDeferred')->willReturn(true);
-        $fooMock->expects($this->once())->method('provides')->willReturn(['foo.provides1', 'foo.provides2']);
-        $fooMock->expects($this->once())->method('when')->willReturn([]);
-
-        // bar mock is added to eagers since it's not reserved
-        /*$repository
-            ->method('createProvider')
-            ->with('bar')
-            ->willReturn($barMock = $this->getMockBuilder('Illuminate\Support\ServiceProvider')
-                ->setConstructorArgs([$app])
-                ->onlyMethods(['isDeferred'])
-                ->getMock());*/
-
-        //$app->expects($this->once())->method('register')->with('bar');
-
-        $app->expects($this->any())->method('runningInConsole')->willReturn(false);
         $app->expects($this->once())->method('addDeferredServices')->with([
             'foo.provides1' => 'foo',
             'foo.provides2' => 'foo',
@@ -143,13 +125,13 @@ class ProviderRepositoryTest extends TestCase
         $repo = new ProviderRepository(
             new Application(),
             $files = $this->getMockBuilder('Illuminate\Filesystem\Filesystem')
-                ->onlyMethods(['put'])
+                ->onlyMethods(['replace'])
                 ->getMock(),
             __DIR__.'/services.php',
         );
 
         $files->expects($this->once())
-            ->method('put')
+            ->method('replace')
             ->with(__DIR__.'/services.php', '<?php return '.var_export(['foo'], true).';');
         $result = $repo->writeManifest(['foo']);
         $this->assertEquals(['foo', 'when' => []], $result);

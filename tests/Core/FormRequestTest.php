@@ -11,7 +11,7 @@ use Illuminate\Translation\ArrayLoader;
 use Illuminate\Validation\Factory;
 use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\TestCase;
-use Themosis\Core\Http\FormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 
 class FormRequestTest extends TestCase
 {
@@ -84,7 +84,11 @@ class FormRequestTest extends TestCase
             'en_US',
         );
 
-        return new Factory($translator, $container);
+        $factory = new Factory($translator, $container);
+
+        $container->instance(\Illuminate\Contracts\Validation\Factory::class, $factory);
+
+        return $factory;
     }
 
     /**

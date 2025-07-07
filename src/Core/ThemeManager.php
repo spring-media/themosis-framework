@@ -60,6 +60,7 @@ class ThemeManager
         'license_uri' => 'License URI',
         'text_domain' => 'Text Domain',
         'domain_path' => 'Domain Path',
+        'template' => 'Template',
     ];
 
     /**
@@ -262,16 +263,17 @@ class ThemeManager
     /**
      * Register theme constants.
      */
-    protected function setThemeConstants()
+    protected function setThemeConstants(): void
     {
         $this->parsedHeaders = $this->headers($this->dirPath.'/style.css', $this->headers);
 
-        // Theme text domain.
-        $textdomain = (isset($this->parsedHeaders['text_domain']) && ! empty($this->parsedHeaders['text_domain']))
-            ? $this->parsedHeaders['text_domain']
-            : 'themosis_theme';
+        $textDomain = $this->parsedHeaders['text_domain'] ?: 'themosis_theme';
 
-        defined('THEME_TD') ? THEME_TD : define('THEME_TD', $textdomain);
+        if ($this->parsedHeaders['template']) {
+            defined('CHILD_THEME_TD') || define('CHILD_THEME_TD', $textDomain);
+        } else {
+            defined('THEME_TD') || define('THEME_TD', $textDomain);
+        }
     }
 
     /**

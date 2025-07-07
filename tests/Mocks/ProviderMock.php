@@ -2,17 +2,25 @@
 
 namespace Themosis\Tests\Mocks;
 
-class ProviderMock
+class ProviderMock extends \Illuminate\Support\ServiceProvider
 {
-    public function isDeferred()
+    public function register()
     {
+        // Do nothing
     }
 
-    public function provides()
+    public function isDeferred(): true
     {
+        return true;
     }
 
-    public function when()
+    public function provides(): array
     {
+        return ['foo.provides1', 'foo.provides2'];
+    }
+
+    public function when(): array
+    {
+        return [];
     }
 }

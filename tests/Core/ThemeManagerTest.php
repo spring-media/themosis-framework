@@ -73,6 +73,15 @@ class ThemeManagerTest extends TestCase
         $this->assertEquals('_s', THEME_TD);
     }
 
+    public function testThemeManagerSetChildThemeTextdomainConstant()
+    {
+        $app = $this->getApplication();
+        $app->loadTheme($app->themesPath('underscore-child'), 'config');
+
+        $this->assertTrue(defined('CHILD_THEME_TD'));
+        $this->assertEquals('_c', CHILD_THEME_TD);
+    }
+
     public function testThemeManagerRegisterImageSizes()
     {
         $app = $this->getApplication();

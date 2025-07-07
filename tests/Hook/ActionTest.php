@@ -61,7 +61,7 @@ class ActionTest extends TestCase
         // Check if this action is registered.
         $this->assertTrue($action->exists('a_custom_action'));
 
-        // Check the attached callback is an array with instance of AnActionClassForTest.
+        // Check the attached callback is an array with instance of ActionMock.
         $class = new ActionMock();
         $this->assertEquals([$class, 'a_custom_action'], $action->getCallback('a_custom_action')[0]);
 
@@ -72,11 +72,11 @@ class ActionTest extends TestCase
         $this->assertEquals(4, $action->getCallback('a_custom_action')[2]);
 
         // Run the action if pre-defined method.
-        $action->add('another_hook', 'Themosis\Tests\Mocks\ActionMock@customName');
+        $action->add('another_hook', '\Themosis\Tests\Mocks\ActionMock@customName');
 
         // Check this action is registered.
         $this->assertTrue($action->exists('another_hook'));
-        // Check attached callback is an array with instance of AnActionClassForTest with method customName
+        // Check attached callback is an array with instance of ActionMock with method customName
         $this->assertEquals([$class, 'customName'], $action->getCallback('another_hook')[0]);
     }
 

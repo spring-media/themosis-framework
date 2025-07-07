@@ -60,7 +60,7 @@ class FilterTest extends TestCase
         // Check if this filter is registered.
         $this->assertTrue($filter->exists('custom-filter'));
 
-        // Check the attached callback is an array with instance of AFilterClassForTest.
+        // Check the attached callback is an array with instance of FilterMock.
         // In this test, we also test the hyphen are converted into an underscore
         // for language compatibility.
         $class = new FilterMock();
@@ -79,12 +79,12 @@ class FilterTest extends TestCase
         $this->assertEquals(2, $filter->getCallback('custom-filter')[2]);
 
         // Run filter with pre-defined method name.
-        $filter->add('another-filter', 'Themosis\Tests\Mocks\FilterMock@awesomeFilter');
+        $filter->add('another-filter', '\Themosis\Tests\Mocks\FilterMock@awesomeFilter');
 
         // Check this filter is registered.
         $this->assertTrue($filter->exists('another-filter'));
 
-        // Check attached callback is an array with instance of AFilterClassForTest and a method of customFilter.
+        // Check attached callback is an array with instance of FilterMock and a method of customFilter.
         $this->assertEquals([$class, 'awesomeFilter'], $filter->getCallback('another-filter')[0]);
     }
 
