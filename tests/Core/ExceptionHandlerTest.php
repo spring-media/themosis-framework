@@ -19,14 +19,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler;
-
-class TestRequest
-{
-    public function expectsJson()
-    {
-        return true;
-    }
-}
+use Themosis\Tests\Mocks\RequestMock;
 
 class ExceptionHandlerTest extends TestCase
 {
@@ -51,9 +44,13 @@ class ExceptionHandlerTest extends TestCase
     {
         $this->container = Container::setInstance(new Container());
 
-        $this->request = new TestRequest();
+        $this->request = $this->getMockBuilder(RequestMock::class)
+                              ->onlyMethods(['expectsJson'])
+                              ->getMock();
 
-        $this->config = $this->createMock(Repository::class);
+        $this->config = $this->getMockBuilder(Repository::class)
+                                       ->onlyMethods(['get'])
+                                       ->getMock();
         $this->container->singleton('config', function () {
             return $this->config;
         });

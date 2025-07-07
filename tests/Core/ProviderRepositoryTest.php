@@ -5,29 +5,7 @@ namespace Themosis\Tests\Core;
 use PHPUnit\Framework\TestCase;
 use Themosis\Core\Application;
 use Illuminate\Foundation\ProviderRepository;
-
-class TestDeferredProvider extends \Illuminate\Support\ServiceProvider
-{
-    public function register()
-    {
-        // Do nothing
-    }
-
-    public function isDeferred()
-    {
-        return true;
-    }
-
-    public function provides()
-    {
-        return ['foo.provides1', 'foo.provides2'];
-    }
-
-    public function when()
-    {
-        return [];
-    }
-}
+use Themosis\Tests\Mocks\ProviderMock;
 
 class ProviderRepositoryTest extends TestCase
 {
@@ -81,7 +59,11 @@ class ProviderRepositoryTest extends TestCase
                 $this->getMockBuilder('Illuminate\Filesystem\Filesystem')->getMock(),
                 __DIR__.'/services.php',
             ])
-            ->onlyMethods(['loadManifest', 'shouldRecompile', 'createProvider'])
+            ->onlyMethods([
+                'loadManifest',
+                'shouldRecompile',
+                'createProvider',
+            ])
             ->getMock();
 
         $repository->method('loadManifest')->willReturn([
@@ -90,7 +72,7 @@ class ProviderRepositoryTest extends TestCase
         ]);
         $repository->method('shouldRecompile')->willReturn(true);
 
-        $fooMock = new TestDeferredProvider($app);
+        $fooMock = new ProviderMock($app);
         $repository->method('createProvider')
             ->with('foo')
             ->willReturn($fooMock);

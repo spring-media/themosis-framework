@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Themosis\Core\Application;
 use Illuminate\Foundation\PackageManifest;
 use Themosis\Route\RouteServiceProvider;
+use Themosis\Tests\Mocks\BasicServiceProviderMock;
 
 class ApplicationTest extends TestCase
 {
@@ -163,8 +164,11 @@ class ApplicationTest extends TestCase
     public function testServiceProvidersAreCorrectlyRegistered()
     {
         $app = new Application();
-        $provider = new TestServiceProvider($app);
+        $provider = $this->getMockBuilder(BasicServiceProviderMock::class)
+                         ->onlyMethods(['register', 'boot'])
+                         ->getMock();
         $class = get_class($provider);
+        $provider->expects($this->once())->method('register');
         $app->register($provider);
 
         $this->assertTrue(in_array($class, $app->getLoadedProviders()));
@@ -488,18 +492,5 @@ class CustomResponse implements Responsable
     public function toResponse($request)
     {
         return new \Illuminate\Http\Response('Something', 500);
-    }
-}
-
-class TestServiceProvider extends \Illuminate\Support\ServiceProvider
-{
-    public function register()
-    {
-        // Do nothing
-    }
-
-    public function boot()
-    {
-        // Do nothing
     }
 }
