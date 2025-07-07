@@ -444,7 +444,7 @@ class Metabox implements MetaboxInterface
      * @param  FieldTypeInterface|SectionInterface  $field
      * @param  SectionInterface  $section
      */
-    public function add($field, SectionInterface $section = null): MetaboxInterface
+    public function add($field, ?SectionInterface $section = null): MetaboxInterface
     {
         if ($field instanceof SectionInterface) {
             $section = $field;

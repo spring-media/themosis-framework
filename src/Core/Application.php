@@ -31,6 +31,8 @@ use Themosis\Core\Events\LocaleUpdated;
 use Themosis\Hook\Hookable;
 use Themosis\Route\RouteServiceProvider;
 
+use function Illuminate\Filesystem\join_paths;
+
 class Application extends Container implements ApplicationContract, CachesConfiguration, CachesRoutes, HttpKernelInterface
 {
     /**
@@ -43,7 +45,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
      *
      * @var string
      */
-    public const VERSION = '10.0';
+    public const VERSION = '12.0.0';
 
     /**
      * Application textdomain.
@@ -131,6 +133,13 @@ class Application extends Container implements ApplicationContract, CachesConfig
      * @var string
      */
     protected $namespace;
+
+    /**
+     * The custom public / web path defined by the developer.
+     *
+     * @var string
+     */
+    protected $publicPath;
 
     protected $storagePath;
 
@@ -508,6 +517,33 @@ class Application extends Container implements ApplicationContract, CachesConfig
     }
 
     /**
+     * Get the path to the views directory.
+     *
+     * This method returns the first configured path in the array of view paths.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    public function viewPath($path = '')
+    {
+        $viewPath = rtrim($this['config']->get('view.paths')[0], DIRECTORY_SEPARATOR);
+
+        return $this->joinPaths($viewPath, $path);
+    }
+
+    /**
+     * Join the given paths together.
+     *
+     * @param  string  $basePath
+     * @param  string  $path
+     * @return string
+     */
+    public function joinPaths($basePath, $path = '')
+    {
+        return join_paths($basePath, $path);
+    }
+
+    /**
      * Get the path to the resources "languages" directory.
      *
      * @param  string  $path
@@ -527,17 +563,6 @@ class Application extends Container implements ApplicationContract, CachesConfig
     public function webPath($path = '')
     {
         return $this->basePath(THEMOSIS_PUBLIC_DIR).($path ? DIRECTORY_SEPARATOR.$path : $path);
-    }
-
-    /**
-     * Get the path to the public directory.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    public function publicPath($path = '')
-    {
-        return $this->webPath($path);
     }
 
     /**
@@ -966,7 +991,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
      *
      * @throws \Exception When an Exception occurs during processing
      */
-    public function handle(SymfonyRequest $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): Response
+    public function handle(SymfonyRequest $request, int $type = self::MAIN_REQUEST, bool $catch = true): Response
     {
         return $this[HttpKernelContract::class]->handle(Request::createFromBase($request));
     }
@@ -1100,16 +1125,6 @@ class Application extends Container implements ApplicationContract, CachesConfig
     public function runningUnitTests()
     {
         return $this['env'] == 'testing';
-    }
-
-    /**
-     * Determine if the application is running with debug mode enabled.
-     *
-     * @return bool
-     */
-    public function hasDebugModeEnabled()
-    {
-        return env('APP_DEBUG', false);
     }
 
     /**
@@ -1396,11 +1411,9 @@ class Application extends Container implements ApplicationContract, CachesConfig
      *
      * @return $this
      */
-    public function terminating($callback)
+    public function terminating($callback): void
     {
-        $this->terminatingCallbacks[] = $callback;
-
-        return $this;
+        $this->events->listen(Events\Terminates::class, $callback);
     }
 
     /**
@@ -1708,5 +1721,25 @@ class Application extends Container implements ApplicationContract, CachesConfig
         $output .= '</script>';
 
         return $output;
+    }
+
+    /**
+     * Get the public path.
+     *
+     * @return string
+     */
+    public function publicPath($path = '')
+    {
+        return $this->webPath($path);
+    }
+
+    /**
+     * Determine if debug mode is enabled.
+     *
+     * @return bool
+     */
+    public function hasDebugModeEnabled(): bool
+    {
+        return (bool) ($this['config']['app.debug'] ?? false);
     }
 }

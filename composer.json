@@ -28,7 +28,7 @@
     }
   },
   "require": {
-    "php": "^8.1",
+    "php": "^8.2",
     "ext-ctype": "*",
     "ext-filter": "*",
     "ext-hash": "*",
@@ -38,39 +38,15 @@
     "ext-tokenizer": "*",
     "composer-runtime-api": "^2.2",
     "composer/installers": "^2.2",
-    "dragonmantank/cron-expression": "^3.3.2",
+    "dragonmantank/cron-expression": "^3.0.2",
     "filp/whoops": "^2.15",
-    "guzzlehttp/guzzle": "^7.7",
-    "illuminate/auth": "^10.0",
-    "illuminate/broadcasting": "^10.0",
-    "illuminate/bus": "^10.0",
-    "illuminate/cache": "^10.0",
-    "illuminate/config": "^10.0",
-    "illuminate/console": "^10.0",
-    "illuminate/container": "^10.0",
-    "illuminate/cookie": "^10.0",
-    "illuminate/database": "^10.0",
-    "illuminate/encryption": "^10.0",
-    "illuminate/events": "^10.0",
-    "illuminate/filesystem": "^10.0",
-    "illuminate/hashing": "^10.0",
-    "illuminate/http": "^10.0",
-    "illuminate/log": "^10.0",
-    "illuminate/mail": "^10.0",
-    "illuminate/notifications": "^10.0",
-    "illuminate/pagination": "^10.0",
-    "illuminate/queue": "^10.0",
-    "illuminate/redis": "^10.0",
-    "illuminate/routing": "^10.0",
-    "illuminate/session": "^10.0",
-    "illuminate/support": "^10.0",
-    "illuminate/testing": "^10.0",
-    "illuminate/validation": "^10.0",
-    "illuminate/view": "^10.0",
-    "laravel/tinker": "^2.8",
-    "laravel/ui": "^4.2",
-    "league/flysystem": "^3.8.0",
+    "guzzlehttp/guzzle": "^7.2",
+    "laravel/framework": "^12.0",
+    "laravel/tinker": "^2.5",
+    "laravel/ui": "^4.0",
+    "league/flysystem": "^3.29.1",
     "league/fractal": "^0.20",
+    "mcaskill/composer-exclude-files": "^4.0",
     "paragonie/sodium_compat": "^1.15",
     "predis/predis": "^2.0.2",
     "ramsey/uuid": "^4.7",
@@ -80,14 +56,14 @@
     "vlucas/phpdotenv": "^5.5"
   },
   "require-dev": {
-    "beyondcode/laravel-dump-server": "^1.7",
-    "driftingly/rector-laravel": "^0.20.0",
+    "beyondcode/laravel-dump-server": "^2.0",
     "fakerphp/faker": "^1.9.1",
     "friendsofphp/php-cs-fixer": "^3.8",
-    "johnpbloch/wordpress-core": "^6.0",
-    "phpunit/phpunit": "^9.0",
-    "rector/rector": "^0.17.0",
-    "symfony/var-dumper": "^6.2"
+    "johnpbloch/wordpress-core": "^6.8.1",
+    "phpunit/phpunit": "^12.2.1",
+    "symfony/var-dumper": "^7.2",
+    "brianium/paratest": "^7.10",
+    "symfony/process": "^6.4|^7.2"
   },
   "scripts": {
     "test": "phpunit",
@@ -96,8 +72,14 @@
   "config": {
     "sort-packages": true,
     "allow-plugins": {
-      "composer/installers": true
+      "composer/installers": true,
+      "mcaskill/composer-exclude-files": true
     }
+  },
+  "extra": {
+    "exclude-from-files": [
+      "laravel/framework/src/Illuminate/Foundation/helpers.php"
+    ]
   },
   "minimum-stability": "dev",
   "prefer-stable": true
