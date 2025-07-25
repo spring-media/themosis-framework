@@ -20,7 +20,7 @@ import '../sass/index.scss';
  * Axios common settings
  * Identify API requests performed by the framework.
  */
-axios.defaults.headers.common['Themosis-Api-Request'] = 1;
+axios.defaults.headers['Themosis-Api-Request'] = 1;
 
 /*
  * Initialize the components Manager.
