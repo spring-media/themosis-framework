@@ -14,6 +14,11 @@ use Themosis\Support\CallbackHandler;
 use Themosis\Support\Contracts\SectionInterface;
 use Themosis\Support\Section;
 
+/**
+ * Class Metabox
+ *
+ * @deprecated This class is deprecated and will be removed in a future version.
+ */
 class Metabox implements MetaboxInterface
 {
     use CallbackHandler;
@@ -110,6 +115,11 @@ class Metabox implements MetaboxInterface
 
     public function __construct(string $id, IHook $action, IHook $filter, FieldsRepositoryInterface $repository)
     {
+	    trigger_error(
+		    'The ' . __CLASS__ . ' class is deprecated and will be removed in a future version. ',
+		    E_USER_DEPRECATED
+	    );
+
         $this->id = $id;
         $this->action = $action;
         $this->filter = $filter;
