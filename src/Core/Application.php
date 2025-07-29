@@ -8,14 +8,13 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application as ApplicationContract;
 use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Contracts\Foundation\CachesRoutes;
-use Illuminate\Events\EventServiceProvider;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Log\LogServiceProvider;
 use Illuminate\Support\Collection;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Themosis\Hook\Hookable;
 use Themosis\Route\RouteServiceProvider;
 
 class Application extends \Illuminate\Foundation\Application implements
@@ -34,35 +33,18 @@ class Application extends \Illuminate\Foundation\Application implements
      */
     public const TEXTDOMAIN = 'themosis';
 
-    public function __construct($basePath = null)
+    protected function registerBaseServiceProviders(): void
     {
-        if ($basePath) {
-            $this->setBasePath($basePath);
-        }
+        parent::registerBaseServiceProviders();
 
-        $this->registerBaseBindings();
-        $this->registerBaseServiceProviders();
-        $this->registerCoreContainerAliases();
-    }
-
-    /**
-     * Register all of the base service providers.
-     *
-     * @return void
-     */
-    protected function registerBaseServiceProviders()
-    {
-        $this->register(new EventServiceProvider($this));
-        $this->register(new LogServiceProvider($this));
         $this->register(new RouteServiceProvider($this));
     }
 
-    /**
-     * Register the core class aliases in the container.
-     */
     public function registerCoreContainerAliases()
     {
-        $list = [
+        parent::registerCoreContainerAliases();
+
+        foreach([
             'action' => [
                 \Themosis\Hook\ActionBuilder::class,
             ],
@@ -78,97 +60,14 @@ class Application extends \Illuminate\Foundation\Application implements
             'asset' => [
                 \Themosis\Asset\Factory::class,
             ],
-            'auth' => [
-                \Illuminate\Auth\AuthManager::class,
-                \Illuminate\Contracts\Auth\Factory::class,
-            ],
-            'auth.driver' => [
-                \Illuminate\Contracts\Auth\Guard::class,
-            ],
-            'auth.password' => [
-                \Illuminate\Auth\Passwords\PasswordBrokerManager::class,
-                \Illuminate\Contracts\Auth\PasswordBrokerFactory::class,
-            ],
-            'auth.password.broker' => [
-                \Illuminate\Auth\Passwords\PasswordBroker::class,
-                \Illuminate\Contracts\Auth\PasswordBroker::class,
-            ],
-            'blade.compiler' => [
-                \Illuminate\View\Compilers\BladeCompiler::class,
-            ],
-            'cache' => [
-                \Illuminate\Cache\CacheManager::class,
-                \Illuminate\Contracts\Cache\Factory::class,
-            ],
-            'cache.store' => [
-                \Illuminate\Cache\Repository::class,
-                \Illuminate\Contracts\Cache\Repository::class,
-            ],
-            'config' => [
-                \Illuminate\Config\Repository::class,
-                \Illuminate\Contracts\Config\Repository::class,
-            ],
-            'cookie' => [
-                \Illuminate\Cookie\CookieJar::class,
-                \Illuminate\Contracts\Cookie\Factory::class,
-                \Illuminate\Contracts\Cookie\QueueingFactory::class,
-            ],
-            'db' => [
-                \Illuminate\Database\ConnectionResolverInterface::class,
-                \Illuminate\Database\DatabaseManager::class,
-            ],
-            'db.connection' => [
-                \Illuminate\Database\Connection::class,
-                \Illuminate\Database\ConnectionInterface::class,
-            ],
-            'encrypter' => [
-                \Illuminate\Encryption\Encrypter::class,
-                \Illuminate\Contracts\Encryption\Encrypter::class,
-            ],
-            'events' => [
-                \Illuminate\Events\Dispatcher::class,
-                \Illuminate\Contracts\Events\Dispatcher::class,
-            ],
-            'files' => [
-                \Illuminate\Filesystem\Filesystem::class,
-            ],
-            'filesystem' => [
-                \Illuminate\Filesystem\FilesystemManager::class,
-                \Illuminate\Contracts\Filesystem\Factory::class,
-            ],
-            'filesystem.disk' => [
-                \Illuminate\Contracts\Filesystem\Filesystem::class,
-            ],
-            'filesystem.cloud' => [
-                \Illuminate\Contracts\Filesystem\Cloud::class,
-            ],
             'filter' => [
                 \Themosis\Hook\FilterBuilder::class,
             ],
             'form' => [
                 \Themosis\Forms\FormFactory::class,
             ],
-            'hash' => [
-                \Illuminate\Hashing\HashManager::class,
-            ],
-            'hash.driver' => [
-                \Illuminate\Contracts\Hashing\Hasher::class,
-            ],
             'html' => [
                 \Themosis\Html\HtmlBuilder::class,
-            ],
-            'log' => [
-                \Illuminate\Log\LogManager::class,
-                \Psr\Log\LoggerInterface::class,
-            ],
-            'mail.manager' => [
-                \Illuminate\Mail\MailManager::class,
-                \Illuminate\Contracts\Mail\Factory::class
-            ],
-            'mailer' => [
-                \Illuminate\Mail\Mailer::class,
-                \Illuminate\Contracts\Mail\Mailer::class,
-                \Illuminate\Contracts\Mail\MailQueue::class,
             ],
             'metabox' => [
                 \Themosis\Metabox\Factory::class,
@@ -176,40 +75,11 @@ class Application extends \Illuminate\Foundation\Application implements
             'posttype' => [
                 \Themosis\PostType\Factory::class,
             ],
-            'queue' => [
-                \Illuminate\Queue\QueueManager::class,
-                \Illuminate\Contracts\Queue\Factory::class,
-                \Illuminate\Contracts\Queue\Monitor::class,
-            ],
-            'queue.connection' => [
-                \Illuminate\Contracts\Queue\Queue::class,
-            ],
-            'queue.failer' => [
-                \Illuminate\Queue\Failed\FailedJobProviderInterface::class,
-            ],
-            'redirect' => [
-                \Illuminate\Routing\Redirector::class,
-            ],
-            'redis' => [
-                \Illuminate\Redis\RedisManager::class,
-                \Illuminate\Contracts\Redis\Factory::class,
-            ],
-            'request' => [
-                \Illuminate\Http\Request::class,
-                \Symfony\Component\HttpFoundation\Request::class,
-            ],
             'router' => [
                 \Themosis\Route\Router::class,
                 \Illuminate\Routing\Router::class,
                 \Illuminate\Contracts\Routing\Registrar::class,
                 \Illuminate\Contracts\Routing\BindingRegistrar::class,
-            ],
-            'session' => [
-                \Illuminate\Session\SessionManager::class,
-            ],
-            'session.store' => [
-                \Illuminate\Session\Store::class,
-                \Illuminate\Contracts\Session\Session::class,
             ],
             'taxonomy' => [
                 \Themosis\Taxonomy\Factory::class,
@@ -217,28 +87,7 @@ class Application extends \Illuminate\Foundation\Application implements
             'taxonomy.field' => [
                 \Themosis\Taxonomy\TaxonomyFieldFactory::class,
             ],
-            'translator' => [
-                \Illuminate\Translation\Translator::class,
-                \Illuminate\Contracts\Translation\Translator::class,
-            ],
-            'twig' => [
-                \Twig_Environment::class,
-            ],
-            'url' => [
-                \Illuminate\Routing\UrlGenerator::class,
-                \Illuminate\Contracts\Routing\UrlGenerator::class,
-            ],
-            'validator' => [
-                \Illuminate\Validation\Factory::class,
-                \Illuminate\Contracts\Validation\Factory::class,
-            ],
-            'view' => [
-                \Illuminate\View\Factory::class,
-                \Illuminate\Contracts\View\Factory::class,
-            ],
-        ];
-
-        foreach ($list as $key => $aliases) {
+        ] as $key => $aliases) {
             foreach ($aliases as $alias) {
                 $this->alias($key, $alias);
             }
@@ -274,8 +123,8 @@ class Application extends \Illuminate\Foundation\Application implements
         $this->instance('path.root', $this->rootPath());
         // Config
         $this->instance('path.config', $this->configPath());
-        // Public
-        $this->instance('path.public', $this->webPath());
+        // Public root
+        $this->instance('path.public', $this->publicPath());
         // Storage
         $this->instance('path.storage', $this->storagePath());
         // Database
@@ -295,92 +144,70 @@ class Application extends \Illuminate\Foundation\Application implements
      */
     public function contentPath($path = '')
     {
-        return WP_CONTENT_DIR . ($path ? DIRECTORY_SEPARATOR . $path : $path);
-    }
-
-    /**
-     * Get the WordPress "mu-plugins" directory.
-     *
-     * @param string $path
-     *
-     * @return string
-     */
-    public function mupluginsPath($path = '')
-    {
-        return $this->contentPath('mu-plugins') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths(WP_CONTENT_DIR, $path);
     }
 
     /**
      * Get the WordPress "plugins" directory.
      *
-     * @param string $path
-     *
+     * @param  string  $path
      * @return string
      */
     public function pluginsPath($path = '')
     {
-        return $this->contentPath('plugins') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths($this->contentPath('plugins'), $path);
+    }
+
+    /**
+     * Get the WordPress "mu-plugins" directory.
+     */
+    public function mupluginsPath(string $path = ''): string
+    {
+        return $this->joinPaths($this->contentPath('mu-plugins'), $path);
     }
 
     /**
      * Get the WordPress "themes" directory.
-     *
-     * @param string $path
-     *
-     * @return string
      */
-    public function themesPath($path = '')
+    public function themesPath(string $path = ''): string
     {
-        return $this->contentPath('themes') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths($this->contentPath('themes'), $path);
     }
 
     /**
      * Get the application directory.
-     *
-     * @param string $path
-     *
-     * @return string
      */
-    public function applicationPath($path = '')
+    public function applicationPath(string $path = ''): string
     {
-        return $this->basePath('app') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths($this->basePath('app'), $path);
     }
 
-    /**
-     * Get the path to the resources "languages" directory.
-     *
-     * @param string $path
-     *
-     * @return string
-     */
-    public function langPath($path = '')
+    public function langPath($path = ''): string
     {
-        return $this->resourcePath('languages') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths($this->resourcePath('languages'), $path);
     }
 
     /**
      * Get the path of the web server root.
      *
-     * @param string $path
-     *
+     * @param  string  $path
      * @return string
      */
     public function webPath($path = '')
     {
-        return $this->basePath(THEMOSIS_PUBLIC_DIR) . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths($this->basePath(THEMOSIS_PUBLIC_DIR), $path);
     }
 
     /**
      * Get the root path of the project.
      *
-     * @param string $path
-     *
+     * @param  string  $path
      * @return string
      */
     public function rootPath($path = '')
     {
         if (defined('THEMOSIS_ROOT')) {
-            return THEMOSIS_ROOT . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+            return $this->joinPaths(THEMOSIS_ROOT, $path);
         }
 
         return $this->webPath($path);
@@ -389,63 +216,48 @@ class Application extends \Illuminate\Foundation\Application implements
     /**
      * Get the storage directory path.
      *
-     * @param string $path
-     *
+     * @param  string  $path
      * @return string
      */
     public function storagePath($path = '')
     {
         if (defined('THEMOSIS_ROOT')) {
-            return $this->rootPath('storage') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+            return $this->joinPaths($this->rootPath('storage'), $path);
         }
 
-        return $this->contentPath('storage') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
-    }
-
-    /**
-     * Get the database directory path.
-     *
-     * @param string $path
-     *
-     * @return string
-     */
-    public function databasePath($path = '')
-    {
-        return $this->rootPath('database') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths($this->contentPath('storage'), $path);
     }
 
     /**
      * Get the bootstrap directory path.
      *
-     * @param string $path
-     *
+     * @param  string  $path
      * @return string
      */
     public function bootstrapPath($path = '')
     {
-        return $this->rootPath('bootstrap') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths($this->rootPath('bootstrap'), $path);
     }
 
     /**
      * Get the WordPress directory path.
      *
-     * @param string $path
+     * @param  string  $path
+     * @return string
      *
      * @throws \Illuminate\Container\EntryNotFoundException
-     *
-     * @return string
      */
     public function wordpressPath($path = '')
     {
-        return $this->webPath(env('WP_DIR', 'cms')) . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+        return $this->joinPaths($this->webPath(env('WP_DIR', 'cms')), $path);
     }
 
     /**
      * Determine if the application is currently down for maintenance.
      *
-     * @throws \Illuminate\Container\EntryNotFoundException
-     *
      * @return bool
+     *
+     * @throws \Illuminate\Container\EntryNotFoundException
      */
     public function isDownForMaintenance()
     {
@@ -459,10 +271,19 @@ class Application extends \Illuminate\Foundation\Application implements
     }
 
     /**
+     * Get an instance of the maintenance mode manager implementation.
+     *
+     * @return \Illuminate\Contracts\Foundation\MaintenanceMode
+     */
+    public function maintenanceMode()
+    {
+        // @TODO to implement
+        return false;
+    }
+
+    /**
      * Bootstrap a Themosis like plugin.
      *
-     * @param string $filePath
-     * @param string $configPath
      *
      * @return PluginManager
      */
@@ -533,13 +354,12 @@ class Application extends \Illuminate\Foundation\Application implements
 
     /**
      * Create and register a hook instance.
-     *
-     * @param string $hook
      */
-    public function registerHook(string $hook)
+    public function registerHook(string $hook): void
     {
         // Build a "Hookable" instance.
         // Hookable instances must extend the "Hookable" class.
+        /** @var Hookable $instance */
         $instance = new $hook($this);
         $hooks = (array) $instance->hook;
 
@@ -750,5 +570,15 @@ class Application extends \Illuminate\Foundation\Application implements
         $output .= '</script>';
 
         return $output;
+    }
+
+    /**
+     * Get the public path.
+     *
+     * @return string
+     */
+    public function publicPath($path = '')
+    {
+        return $this->webPath($path);
     }
 }
