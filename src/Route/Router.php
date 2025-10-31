@@ -69,6 +69,15 @@ class Router extends IlluminateRouter
         return parent::findRoute($request);
     }
 
+    public function setCompiledRoutes(array $routes): void
+    {
+        $this->routes = new CompiledRouteCollection($routes['compiled'], $routes['attributes'])
+            ->setRouter($this)
+            ->setContainer($this->container);
+
+        $this->container->instance('routes', $this->routes);
+    }
+
     /**
      * Setup WordPress conditions.
      */

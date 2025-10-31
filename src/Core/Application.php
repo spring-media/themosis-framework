@@ -26,7 +26,7 @@ class Application extends \Illuminate\Foundation\Application implements
     /**
      * Themosis framework version.
      */
-    public const THEMOSIS_VERSION = '12.0.0';
+    public const THEMOSIS_VERSION = '12.0.1';
 
     /**
      * Application textdomain.
