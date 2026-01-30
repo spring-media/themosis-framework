@@ -56,6 +56,7 @@ class Asset implements AssetInterface
         'login_enqueue_scripts' => 'login',
         'customize_preview_init' => 'customizer',
         'enqueue_block_editor_assets' => 'editor',
+        'enqueue_embed_scripts' => 'embed',
     ];
 
     /**
