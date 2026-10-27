@@ -10,5 +10,4 @@ Thumbs.db
 # Framework
 vendor/
 node_modules/
-composer.lock
 composer.phar
